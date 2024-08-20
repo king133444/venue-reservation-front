@@ -3,8 +3,8 @@ import Login from "@/views/login/index";
 import HomePage from "@/views/home/index"
 import ReserveManage from "@/views/home/reserveManage";
 import AuthRoute from "./AuthRouter";
-import ProjectManage from "@/views/venueDynamics";
-import VisitorManage from "@/views/personalManage";
+import VenueDynamics from "@/views/venueDynamics";
+import PersonalManage from "@/views/personalManage";
 import { ReactNode } from "react";
 
 // 路由元数据的类型
@@ -59,7 +59,7 @@ export const rootRouter: RouteConfig = [
         path: "venueDynamics",
         element:
 					<AuthRoute>
-					  <ProjectManage />
+					  <VenueDynamics />
 					</AuthRoute>,
         meta: {
           title: "场馆动态",
@@ -71,7 +71,7 @@ export const rootRouter: RouteConfig = [
         path: "personalManage",
         element:
 					<AuthRoute>
-					  <VisitorManage />
+					  <PersonalManage />
 					</AuthRoute>,
         meta: {
           title: "人员管理",

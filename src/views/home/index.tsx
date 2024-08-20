@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Menu,  theme } from 'antd';
+import { Layout, Menu, theme } from 'antd';
 import getItems from './sider/menuItem';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { getMenuKeys, getRoutes } from './sider/getRoutes';
@@ -12,7 +12,9 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const items = getItems();
+  // 通过menu值改变路由
   const [selectKey, setSelectKey] = useState<string>()
+  // 通过路由获取menu值，显示在菜单
   const [selectedKey, setSelectedKey] = useState(getMenuKeys(location.pathname));
 
   const {
@@ -23,12 +25,18 @@ const Home: React.FC = () => {
     if (selectKey) {
 
       navigate(getRoutes(selectKey));
+
     }
   }, [selectKey]);
   useEffect(() => {
 
-    setSelectedKey(getMenuKeys(location.pathname));
+    const menuKey = getMenuKeys(location.pathname);
 
+    if (menuKey !== selectKey) {
+      setSelectKey(menuKey);
+    }
+
+    setSelectedKey(menuKey);
   }, [location.pathname]);
 
   return (
@@ -56,7 +64,7 @@ const Home: React.FC = () => {
             selectedKeys={[selectedKey]}
             // defaultSelectedKeys={['menu5']}
             items={items} />
-         
+
         </Sider>
         <Layout>
           <LayoutHeader />
@@ -71,7 +79,7 @@ const Home: React.FC = () => {
           >
             <Outlet />
           </Content>
-   
+
         </Layout>
 
       </Layout>
