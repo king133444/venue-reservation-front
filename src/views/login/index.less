@@ -1,0 +1,128 @@
+html,
+body {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	/* 防止页面内容溢出导致滚动 */
+}
+
+.login-container {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 550px;
+	height: 100%;
+	min-height: 500px;
+	// background-image: url('@/assets/images/login_bg.svg');
+	background-position: 50%;
+	background-size: 100% 100%, cover;
+}
+
+.login-container .dark-mode {
+	position: absolute;
+	top: 5%;
+	right: 3.2%;
+}
+
+.login-container .login-box {
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 94%;
+	height: 100%;
+	// padding: 18px;
+	overflow: hidden;
+	position: relative;
+}
+
+.login-container .login-box .login-form {
+	position: absolute;
+	margin-top: 24vh;
+	padding: 45px 45px 90px;
+	border-radius: 10px;
+	background-color: rgb(255 255 255 / 50%);
+}
+
+.login-container .login-box .login-logo {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 50vh;
+}
+
+
+.login-container .login-box .login-logo .login-icon {
+	position: absolute;
+	top: 2.8vh;
+	width: 500px;
+	left: 20vw;
+
+}
+
+.login-container .login-box .login-logo .logo-text {
+	position: absolute;
+	height: auto;
+	width: 500px;
+	top: 2vh;
+	right: 32vw;
+}
+
+.login-container .login-box .login-form .ant-form-item {
+	height: 75px;
+	margin-bottom: 0;
+}
+
+.login-container .login-box .login-form .ant-form-item .ant-input-prefix {
+	margin-right: 10px;
+}
+
+.login-container .login-box .login-form .ant-form-item .ant-input-affix-wrapper-lg {
+	padding: 8.3px 11px;
+}
+
+.login-container .login-box .login-form .ant-form-item .ant-input-affix-wrapper,
+.login-container .login-box .login-form .ant-form-item .ant-input-lg {
+	font-size: 14px;
+}
+
+.login-container .login-box .login-form .ant-form-item .ant-input-affix-wrapper {
+	color: #bfbfbf;
+}
+
+.login-container .login-box .login-form .login-btn {
+	width: 100%;
+	margin-top: 10px;
+	white-space: nowrap;
+}
+
+.login-container .login-box .login-form .login-btn .ant-form-item-control-input-content {
+	display: flex;
+	justify-content: space-between;
+}
+
+.login-container .login-box .login-form .login-btn .ant-form-item-control-input-content .ant-btn {
+	width: 180px;
+}
+
+.login-container .login-box .login-form .login-btn .ant-form-item-control-input-content .ant-btn span {
+	font-size: 14px;
+}
+
+// .ant-form-item-label > label {
+//  height: 1px !important;
+// }
+
+.gradient-text {
+	background: -webkit-linear-gradient(45deg, blue, purple);
+	/* Chrome, Safari */
+	background: linear-gradient(45deg, blue, purple);
+	/* 标准语法 */
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	/* Chrome, Safari */
+	color: transparent;
+	/* 将文字颜色设置为透明，以显示背景的渐变色 */
+}
