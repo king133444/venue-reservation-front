@@ -28,16 +28,20 @@ export default {
 		return fetchPost("/users/updateMyUser", params);
 	},
 	// 删除用户
-	RemoveUser: (params: any) => {
-		return fetchPost("/users/removeUser", params);
+	DeleteUser: (params: any) => {
+		return fetchPost("/users/deleteUser", params);
 	},
 	// 用户列表
 	GetUsers: (params: any) => {
-		return fetchPost("/users/users", params);
+		return fetchGet("/users/getUsers", params);
 	},
-	// 获取当前用户
-	GetMyUser: (params: any) => {
-		return fetchPost("/users/getMyUser", params);
+	// 新增用户
+	CreateUser: (params: any) => {
+		return fetchPost("/users/createUser", params);
+	},
+	// 批量上传用户
+	UploadUsers: (params: any) => {
+		return fetchPost("/users/uploadUsers", params);
 	},
 	// 获取用户统计
 	GetUserStatistics: (params: any) => {
