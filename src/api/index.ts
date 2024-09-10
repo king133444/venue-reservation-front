@@ -1,4 +1,4 @@
-import { fetchGet, fetchPost, fetchPost2 } from "@/components/ReqInstance/axios";
+import { fetchDelete, fetchGet, fetchPost, fetchPost2, fetchPut } from "@/components/ReqInstance/axios";
 
 export default {
 	/**
@@ -23,21 +23,41 @@ export default {
 	/**
 	 * 用户相关接口
 	 */
-	// 修改我的用户信息
-	UpdateMyUser: (params: any) => {
-		return fetchPost("/users/updateMyUser", params);
-	},
+	// 修改用户信息
+	UpdateUser: (params: any) => {
+		return fetchPut("/users/updateUser", params);
+	},	
 	// 删除用户
-	RemoveUser: (params: any) => {
-		return fetchPost("/users/removeUser", params);
-	},
+	DeleteUser: (params: any) => {
+		return fetchDelete("/users/deleteUser", params);
+	},	  
 	// 用户列表
 	GetUsers: (params: any) => {
-		return fetchPost("/users/users", params);
+		return fetchGet("/users/getUsers", params);
 	},
-	// 获取当前用户
-	GetMyUser: (params: any) => {
-		return fetchPost("/users/getMyUser", params);
+	// 新增用户
+	CreateUser: (params: any) => {
+		return fetchPost("/users/createUser", params);
+	},
+	// 批量上传用户
+	UploadUsers: (params: any) => {
+		return fetchPost("/users/uploadUsers", params);
+	},
+	// 场馆动态列表
+	GetPosts: (params: any) => {
+		return fetchGet("/venuePosts/getPosts", params);
+	},
+	// 添加场馆动态
+	CreatePost: (params: any) => {
+		return fetchPost("/venuePosts/createPost", params);
+	},
+	// 更新动态列表
+	UpdatePost: (params: any) => {
+		return fetchPut("/venuePosts/updatePost", params);
+	},
+	// 删除动态列表
+	DeletePost: (params: any) => {
+		return fetchDelete("/venuePosts/deletePost", params);
 	},
 	// 获取用户统计
 	GetUserStatistics: (params: any) => {
@@ -46,10 +66,6 @@ export default {
 	// 游客列表
 	GetTourists: (params: any) => {
 		return fetchGet("/users/tourists", params);
-	},
-	// 修改用户信息
-	UpdateUser: (params: any) => {
-		return fetchPost("/users/updateUser", params);
 	},
 	// 批量删除用户
 	RemoveUsers: (params: any) => {

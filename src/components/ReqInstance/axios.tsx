@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
 // const ip = 'http://8.130.10.227/'
 // const ip = 'http://8.130.10.227'
@@ -118,3 +118,26 @@ export function fetchGet2(url: string, params: any) {
 			});
 	});
 }
+
+// 添加 fetchPut 方法
+export function fetchPut(url: string, params: any): Promise<AxiosResponse<any>> {
+    return ReqInstance.put(url, params)
+        .then(response => response)
+        .catch(error => Promise.reject(error));
+}
+
+// 添加 fetchDelete 方法
+export function fetchDelete(url: string, params: any = {}) {
+	return new Promise((resolve, reject) => {
+	  // 确保 params 是对象，如果不是，将其转换为对象
+	  const config = { params: typeof params === 'object' ? params : {} };
+	  ReqInstance.delete(url, config)
+		.then(response => {
+		  resolve(response);
+		})
+		.catch(error => {
+		  reject(error);
+		});
+	});
+  }
+  
