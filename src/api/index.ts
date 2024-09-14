@@ -1,4 +1,4 @@
-import { fetchDelete, fetchGet, fetchPost, fetchPost2, fetchPut } from "@/components/ReqInstance/axios";
+import { fetchDelete, fetchGet, fetchPost, fetchPut, uploadFile } from "@/components/ReqInstance/axios";
 
 export default {
 	/**
@@ -26,11 +26,11 @@ export default {
 	// 修改用户信息
 	UpdateUser: (params: any) => {
 		return fetchPut("/users/updateUser", params);
-	},	
+	},
 	// 删除用户
 	DeleteUser: (params: any) => {
 		return fetchDelete("/users/deleteUser", params);
-	},	  
+	},
 	// 用户列表
 	GetUsers: (params: any) => {
 		return fetchGet("/users/getUsers", params);
@@ -41,7 +41,7 @@ export default {
 	},
 	// 批量上传用户
 	UploadUsers: (params: any) => {
-		return fetchPost("/users/uploadUsers", params);
+		return uploadFile("/users/uploadUsers", params);
 	},
 	// 场馆动态列表
 	GetPosts: (params: any) => {
@@ -53,11 +53,11 @@ export default {
 	},
 	// 更新动态列表
 	UpdatePost: (params: any) => {
-		return fetchPut("/venuePosts/updatePost", params);
+		return fetchPost("/venuePosts/updatePost", params);
 	},
 	// 删除动态列表
 	DeletePost: (params: any) => {
-		return fetchDelete("/venuePosts/deletePost", params);
+		return fetchPost("/venuePosts/deletePost", params);
 	},
 	// 获取用户统计
 	GetUserStatistics: (params: any) => {
@@ -73,7 +73,7 @@ export default {
 	},
 	// 批量删除角色
 	RemoveRoles: (params: any) => {
-		return fetchPost2("/role/deleteRole", params);
+		return uploadFile("/role/deleteRole", params);
 	},
 	// 获取角色列表
 	GetRoles: (params: any) => {

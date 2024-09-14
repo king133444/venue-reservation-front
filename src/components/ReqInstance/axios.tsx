@@ -66,19 +66,16 @@ export function fetchPost(url: string, params: any) {
 	});
 }
 
-export function fetchPost2(url: string, params: any, body: any = null) {
+export function uploadFile(url: string, formData: FormData) {
 	return new Promise((resolve, reject) => {
-		ReqInstance.post(url, body, {
-			params: params
+		ReqInstance.post(url, formData, {
+			headers: {
+				"Content-Type": "multipart/form-data"
+			}
 		})
-			.then(
-				response => {
-					resolve(response);
-				},
-				err => {
-					reject(err);
-				}
-			)
+			.then(response => {
+				resolve(response);
+			})
 			.catch(error => {
 				reject(error);
 			});
@@ -121,23 +118,22 @@ export function fetchGet2(url: string, params: any) {
 
 // 添加 fetchPut 方法
 export function fetchPut(url: string, params: any): Promise<AxiosResponse<any>> {
-    return ReqInstance.put(url, params)
-        .then(response => response)
-        .catch(error => Promise.reject(error));
+	return ReqInstance.put(url, params)
+		.then(response => response)
+		.catch(error => Promise.reject(error));
 }
 
 // 添加 fetchDelete 方法
 export function fetchDelete(url: string, params: any = {}) {
 	return new Promise((resolve, reject) => {
-	  // 确保 params 是对象，如果不是，将其转换为对象
-	  const config = { params: typeof params === 'object' ? params : {} };
-	  ReqInstance.delete(url, config)
-		.then(response => {
-		  resolve(response);
-		})
-		.catch(error => {
-		  reject(error);
-		});
+		// 确保 params 是对象，如果不是，将其转换为对象
+		const config = { params: typeof params === "object" ? params : { params } };
+		ReqInstance.delete(url, config)
+			.then(response => {
+				resolve(response);
+			})
+			.catch(error => {
+				reject(error);
+			});
 	});
-  }
-  
+}
