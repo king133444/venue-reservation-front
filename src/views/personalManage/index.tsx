@@ -9,6 +9,8 @@ const UserManagement = () => {
 	const [loading, setLoading] = useState(false);
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [showEditModal, setShowEditModal] = useState(false);
+	const [imagePreview, setImagePreview] = useState(""); // 用于显示图片预览
+	const [, setImageBase64] = useState(""); // 用于存储处理后的Base64编码
 	const [selectedUser, setSelectedUser] = useState<{
 		id?: number;
 		name?: string;
@@ -47,31 +49,54 @@ const UserManagement = () => {
 		}
 	};
 
-	const handleUpload = async (file: any) => {
-		const reader = new FileReader();
-		reader.onload = async () => {
-			const base64Image = reader.result?.toString().split(",")[1];
-			try {
-				const response = (await api.UploadUsers(base64Image)) as AxiosResponse;
-				message.success(response.data.message);
-				fetchData();
-			} catch (error) {
-				message.error("批量上传失败");
-				console.error("上传文件错误:", error);
+	const handleUpload = async (file: string | Blob) => {
+		const formData = new FormData();
+		formData.append("file", file);
+
+		try {
+			const response: any = await api.UploadUsers(formData);
+			message.success(response.message || "批量上传成功");
+			fetchData();
+		} catch (error) {
+			message.error("批量上传失败");
+			console.error("上传文件错误:", error);
+		}
+	};
+	const showdDeleteConfirm = (record: any) => {
+		Modal.confirm({
+			title: "您确定要删除这个用户吗？",
+			content: "删除后，您将无法恢复这个用户。",
+			onOk() {
+				handleDelete(record);
 			}
-		};
-		reader.readAsDataURL(file);
+		});
 	};
 
 	const handleDelete = async (record: { id: number }) => {
 		try {
-			const response = (await api.DeleteUser({ id: record.id })) as AxiosResponse;
-			message.success(response.data.message);
+			const response: any = await api.DeleteUser({ id: record.id });
+			message.success(response.message);
 			fetchData();
 		} catch (error) {
 			message.error("删除用户失败");
 			console.error("删除用户错误:", error);
 		}
+	};
+
+	const handleBeforeUpload = (file: Blob) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			if (typeof reader.result === "string") {
+				setImagePreview(reader.result); // 设置预览图片
+				const base64Data = reader.result.split(",")[1]; // 移除"data:image/jpeg;base64,"前缀
+				// 更新状态，存储处理后的Base64编码
+				setImageBase64(base64Data);
+				// 更新表单中的image字段
+				form.setFieldsValue({ image: base64Data });
+			}
+		};
+		reader.readAsDataURL(file);
+		return false; // 阻止默认上传行为
 	};
 
 	const handleAddSubmit = async (values: any) => {
@@ -99,8 +124,8 @@ const UserManagement = () => {
 				id: selectedUser?.id,
 				is_electrical_employee: values.is_electrical_employee ? 1 : 0
 			};
-			const response = (await api.UpdateUser(adjustedValues)) as AxiosResponse;
-			message.success(response.data.message || "用户更新成功");
+			const response: any = await api.UpdateUser(adjustedValues);
+			message.success(response.message);
 			setShowEditModal(false);
 			setSelectedUser(null);
 			fetchData();
@@ -122,13 +147,34 @@ const UserManagement = () => {
 		}
 	};
 
+	// 点击新增用户按钮时调用
+	const openAddModal = () => {
+		// 重置表单字段
+		form.resetFields();
+		// 清除图片预览
+		setImagePreview("");
+		// 清除Base64图片数据
+		setImageBase64("");
+		// 显示新增用户模态框
+		setShowAddModal(true);
+	};
+
 	const openEditModal = (record: any) => {
 		setSelectedUser({
 			...record,
 			idNumber: record.id_number,
 			is_electrical_employee: record.is_electrical_employee === 1,
-			image: record.image // Ensure this is Base64 string
+			image: record.image
 		});
+
+		// 如果当前记录没有图片，清除图片预览
+		if (!record.image) {
+			setImagePreview(""); // 清除图片预览
+		} else {
+			// 如果有图片，设置图片预览为当前记录的图片
+			setImagePreview(`data:image/jpeg;base64,${record.image}`);
+		}
+
 		setShowEditModal(true);
 	};
 
@@ -162,7 +208,7 @@ const UserManagement = () => {
 					<Button icon={<EditOutlined />} onClick={() => openEditModal(record)}>
 						编辑
 					</Button>
-					<Button icon={<DeleteOutlined />} onClick={() => handleDelete(record)} style={{ marginLeft: 8 }}>
+					<Button icon={<DeleteOutlined />} onClick={() => showdDeleteConfirm(record)} style={{ marginLeft: 8 }}>
 						删除
 					</Button>
 				</span>
@@ -174,13 +220,14 @@ const UserManagement = () => {
 		beforeUpload: (file: any) => {
 			handleUpload(file);
 			return false;
-		}
+		},
+		showUploadList: false // 不显示文件列表
 	};
 
 	return (
 		<div>
 			<div style={{ display: "flex", justifyContent: "space-between" }}>
-				<Button onClick={() => setShowAddModal(true)}>新增用户</Button>
+				<Button onClick={openAddModal}>新增用户</Button>
 				<Upload {...uploadProps}>
 					<Button icon={<UploadOutlined />}>文件批量上传</Button>
 				</Upload>
@@ -209,16 +256,12 @@ const UserManagement = () => {
 						<Input />
 					</Form.Item>
 					<Form.Item label="人脸照片" name="image">
-						<Upload
-							showUploadList={false}
-							beforeUpload={file => {
-								handleAddSubmit(file);
-								return false;
-							}}
-							accept="image/*"
-						>
+						<Upload showUploadList={false} beforeUpload={handleBeforeUpload} accept="image/*">
 							<Button icon={<UploadOutlined />}>上传图片</Button>
 						</Upload>
+						{imagePreview && (
+							<img src={imagePreview} alt="预览" style={{ maxWidth: "100%", marginTop: 10, width: 100, height: 100 }} />
+						)}
 					</Form.Item>
 					<Form.Item label="职位" name="occupation" rules={[{ required: true, message: "请输入职位" }]}>
 						<Input />
@@ -253,12 +296,15 @@ const UserManagement = () => {
 						<Form.Item label="人脸照片" name="image">
 							{selectedUser?.image ? (
 								<div>
-									<img src={`data:image/jpeg;base64,${selectedUser.image}`} style={{ width: 100, height: 100 }} />
+									<img
+										src={`data:image/jpeg;base64,${selectedUser.image}`}
+										style={{ width: 100, height: 100, marginBottom: 10 }}
+									/>
 									<Upload
 										showUploadList={false}
 										beforeUpload={file => {
-											handleUpload(file);
-											return false;
+											handleBeforeUpload(file);
+											return false; // 阻止自动上传
 										}}
 										accept="image/*"
 									>
@@ -266,16 +312,21 @@ const UserManagement = () => {
 									</Upload>
 								</div>
 							) : (
+								// 当没有图片时，显示上传按钮
 								<Upload
 									showUploadList={false}
 									beforeUpload={file => {
-										handleEditSubmit(file);
-										return false;
+										handleBeforeUpload(file);
+										return false; // 阻止自动上传
 									}}
 									accept="image/*"
 								>
 									<Button icon={<UploadOutlined />}>上传图片</Button>
 								</Upload>
+							)}
+							{/* 如果有图片预览，则显示图片预览 */}
+							{imagePreview && !selectedUser?.image && (
+								<img src={imagePreview} alt="预览" style={{ maxWidth: "100%", marginTop: 10, width: 100, height: 100 }} />
 							)}
 						</Form.Item>
 						<Form.Item label="职位" name="occupation" rules={[{ required: true, message: "请输入职位" }]}>

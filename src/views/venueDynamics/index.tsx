@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Button, Form, Input, Layout, Modal, message, DatePicker, List, Card } from "antd";
+import { Button, Form, Input, Layout, Modal, message, DatePicker, List, Card, Upload } from "antd";
 import moment from "moment";
-import api from "@/api";
+import api from "@/api"; // 确保这里的路径正确指向您的API函数
+import { UploadOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;
 
@@ -9,7 +10,7 @@ interface Dynamic {
 	id: number;
 	title: string;
 	content: string;
-	publish_date: string;
+	publish_date: Date;
 	image: string | null;
 }
 
@@ -17,25 +18,21 @@ const VenueDynamics = () => {
 	const [dynamics, setDynamics] = useState<Dynamic[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [isModalVisible, setIsModalVisible] = useState(false);
-	const [isEditMode, setIsEditMode] = useState(false);
 	const [selectedDynamic, setSelectedDynamic] = useState<Dynamic | null>(null);
+	const [isEditMode, setIsEditMode] = useState(false);
+	const [imagePreview, setImagePreview] = useState("");
 	const [form] = Form.useForm();
 
 	useEffect(() => {
-		console.log("Fetching dynamics...");
 		fetchDynamics();
 	}, []);
 
 	const fetchDynamics = async () => {
 		setLoading(true);
 		try {
-			console.log("Sending API request...");
 			const response = await api.GetPosts({});
-			console.log("API Response:", response);
-			// 使用类型断言将响应断言为 Dynamic[]
 			const dynamics = response as Dynamic[];
 			setDynamics(dynamics);
-			console.log("Dynamics set:", dynamics);
 		} catch (error) {
 			console.error("Error fetching dynamics:", error);
 		}
@@ -49,54 +46,98 @@ const VenueDynamics = () => {
 		if (dynamic) {
 			form.setFieldsValue({
 				...dynamic,
-				publish_date: moment(dynamic.publish_date)
+				publish_date: moment(dynamic.publish_date),
+				image: undefined // 清除图片字段
 			});
+			setImagePreview(dynamic.image ? `data:image/png;base64,${dynamic.image}` : "");
+		} else {
+			setImagePreview("");
 		}
 		setIsModalVisible(true);
 	};
 
-	const handleOk = async () => {
+	const handleCreate = async () => {
+		console.log("handleCreate is triggered");
 		try {
-			let values = await form.validateFields();
-			values = {
+			const values = await form.validateFields();
+			const formattedValues = {
 				...values,
-				publish_date: values.publish_date.format("YYYY-MM-DD HH:mm:ss")
+				publish_date: values.publish_date,
+				// .format("YYYY-MM-DD HH:mm:ss"),
+				image: values.image || undefined
 			};
-			if (isEditMode && selectedDynamic) {
-				await api.UpdatePost({ ...selectedDynamic, ...values });
-				message.success("场馆动态更新成功");
-			} else {
-				await api.CreatePost(values);
-				message.success("场馆动态创建成功");
-			}
+			console.log("values:", formattedValues);
+			await api.CreatePost(formattedValues);
+			message.success("场馆动态创建成功");
 			setIsModalVisible(false);
 			fetchDynamics();
-		} catch (error: any) {
-			console.log("Failed:", error);
-			// 对于表单验证失败的情况，Ant Design 已经内部处理，这里主要处理 API 调用失败的情况
-			if (error.response) {
-				// 如果错误中包含响应体，打印出更详细的信息
-				console.error("API Error status:", error.response.status);
-				console.error("API Error data:", error.response.data);
-				message.error("操作失败，请检查输入或稍后再试");
-			}
+		} catch (error) {
+			console.log("Create Failed:", error);
+			message.error("创建操作失败，请检查输入或稍后再试");
 		}
 	};
 
+	const handleUpdate = async () => {
+		if (!selectedDynamic) {
+			message.info("没有表单更新");
+			return;
+		}
+		try {
+			const values = await form.validateFields();
+			const formattedValues = {
+				...values,
+				publish_date: values.publish_date,
+				image: values.image || undefined
+			};
+			console.log("values:", formattedValues);
+			await api.UpdatePost({ id: selectedDynamic.id, ...formattedValues });
+			message.success("场馆动态更新成功");
+			setIsModalVisible(false);
+			fetchDynamics();
+		} catch (error) {
+			console.log("Update Failed:", error);
+			message.error("更新操作失败，请检查输入或稍后再试");
+		}
+	};
+	const showdDeleteConfirm = (record: any) => {
+		Modal.confirm({
+			title: "删除",
+			content: "删除后，您将无法恢复这个场馆动态。",
+			onOk() {
+				handleDelete(record);
+			}
+		});
+	};
 	const handleDelete = async (id: number) => {
 		try {
-			await api.DeletePost(id);
-			message.success("场馆动态删除成功");
-			fetchDynamics();
-		} catch (error: any) {
-			console.error("Delete dynamic error:", error);
-			if (error.response) {
-				// 打印更详细的错误信息
-				console.error("Delete Error status:", error.response.status);
-				console.error("Delete Error data:", error.response.data);
+			const response: any = await api.DeletePost({ id });
+			console.log("LOG", response);
+
+			if (response.success) {
+				message.success(response.message);
+			} else {
+				message.error(response.message);
 			}
+			fetchDynamics();
+		} catch (error) {
+			console.error("Delete dynamic error:", error);
 			message.error("删除失败");
 		}
+	};
+
+	const handleBeforeUpload = (file: Blob) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			if (typeof reader.result === "string") {
+				setImagePreview(reader.result); // 设置预览图片，这里保留前缀，因为预览需要
+
+				// 移除"data:image/jpeg;base64,"前缀，只存储纯Base64编码到数据库
+				const base64Data = reader.result.split(",")[1];
+				form.setFieldsValue({ image: base64Data });
+			}
+		};
+		reader.readAsDataURL(file);
+		return false; // 阻止默认上传行为
 	};
 
 	return (
@@ -116,7 +157,7 @@ const VenueDynamics = () => {
 									title={item.title}
 									extra={<Button onClick={() => showModal(item)}>编辑</Button>}
 									actions={[
-										<Button key="delete" onClick={() => handleDelete(item.id)}>
+										<Button key="delete" onClick={() => showdDeleteConfirm(item.id)}>
 											删除
 										</Button>
 									]}
@@ -139,7 +180,7 @@ const VenueDynamics = () => {
 			<Modal
 				title={`${isEditMode ? "编辑" : "新增"}场馆动态`}
 				open={isModalVisible}
-				onOk={handleOk}
+				onOk={() => (isEditMode ? handleUpdate() : handleCreate())}
 				onCancel={() => setIsModalVisible(false)}
 			>
 				<Form form={form} layout="vertical">
@@ -152,8 +193,13 @@ const VenueDynamics = () => {
 					<Form.Item name="publish_date" label="发布日期" rules={[{ required: true, message: "请选择发布日期" }]}>
 						<DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
 					</Form.Item>
-					<Form.Item name="image" label="图片(Base64)">
-						<Input.TextArea rows={4} placeholder="请输入图片的Base64编码" />
+					<Form.Item label="动态图片" name="image">
+						<Upload showUploadList={false} beforeUpload={handleBeforeUpload} accept="image/*">
+							<Button icon={<UploadOutlined />}>上传图片</Button>
+						</Upload>
+						{imagePreview && (
+							<img src={imagePreview} alt="预览" style={{ maxWidth: "100%", marginTop: 10, maxHeight: "100px" }} />
+						)}
 					</Form.Item>
 				</Form>
 			</Modal>
