@@ -1,0 +1,7 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "---类型检查---"
+npx tsc
+echo "---lint检查---"
+npx lint-staged
