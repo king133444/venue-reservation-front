@@ -1,11 +1,13 @@
-import { Navigate, useRoutes } from "react-router-dom";
-import Login from "@/views/login/index";
-import HomePage from "@/views/home/index";
-import ReserveManage from "@/views/reserveManage";
-import AuthRoute from "./AuthRouter";
-import VenueDynamics from "@/views/venueDynamics";
-import PersonalManage from "@/views/personalManage";
-import { ReactNode } from "react";
+import type { ReactNode } from 'react';
+import { Navigate, useRoutes } from 'react-router-dom';
+
+import HomePage from '@/views/home/index';
+import Login from '@/views/login/index';
+import PersonalManage from '@/views/personalManage';
+import ReserveManage from '@/views/reserveManage';
+import VenueDynamics from '@/views/venueDynamics';
+
+import AuthRoute from './AuthRouter';
 
 // 路由元数据的类型
 interface RouteMeta {
@@ -25,19 +27,19 @@ interface Route {
 type RouteConfig = Route[];
 export const rootRouter: RouteConfig = [
 	{
-		path: "/",
+		path: '/',
 		element: <Navigate to="/login" />
 	},
 	{
-		path: "/login",
+		path: '/login',
 		element: <Login />,
 		meta: {
-			title: "登录页",
-			key: "login"
+			title: '登录页',
+			key: 'login'
 		}
 	},
 	{
-		path: "/home",
+		path: '/home',
 		element: (
 			<AuthRoute>
 				<HomePage />
@@ -45,48 +47,48 @@ export const rootRouter: RouteConfig = [
 		),
 		children: [
 			{
-				path: "",
+				path: '',
 				element: (
 					<AuthRoute>
 						<ReserveManage />
 					</AuthRoute>
 				),
 				meta: {
-					title: "预约管理",
-					key: "reserveManage"
+					title: '预约管理',
+					key: 'reserveManage'
 				}
 			},
 			{
-				path: "venueDynamics",
+				path: 'venueDynamics',
 				element: (
 					<AuthRoute>
 						<VenueDynamics />
 					</AuthRoute>
 				),
 				meta: {
-					title: "场馆动态",
-					key: "venueDynamics"
+					title: '场馆动态',
+					key: 'venueDynamics'
 				}
 			},
 
 			{
-				path: "personalManage",
+				path: 'personalManage',
 				element: (
 					<AuthRoute>
 						<PersonalManage />
 					</AuthRoute>
 				),
 				meta: {
-					title: "人员管理",
-					key: "personalManage"
+					title: '人员管理',
+					key: 'personalManage'
 				}
 			}
 
 			// 添加其他子路由...
 		],
 		meta: {
-			title: "主界面",
-			key: "homepage"
+			title: '主界面',
+			key: 'homepage'
 		}
 	}
 ];

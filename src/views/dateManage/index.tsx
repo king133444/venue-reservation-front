@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
-import { Table, Button, Checkbox, InputNumber, message, Modal } from "antd";
 import './DateManage.css';
+
+import { Button, Checkbox, InputNumber, message, Modal, Table } from 'antd';
+import { useEffect, useState } from 'react';
 
 export interface Reservation {
 	id: number;
@@ -10,10 +11,10 @@ export interface Reservation {
 	status: number;
 }
 
-const weekDays = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"];
+const weekDays = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
 const nameMap = {
-	BADMINTON: "羽毛球馆",
-	BASKETBALL: "篮球馆"
+	BADMINTON: '羽毛球馆',
+	BASKETBALL: '篮球馆'
 };
 const defaultData: Reservation[] = [
 	{ id: 1, name: 'BADMINTON', available_days: [], available_peoples: 2, status: 0 },
@@ -50,7 +51,8 @@ const defaultData: Reservation[] = [
 
 // 	const updateReservationSettings = async (record: Reservation) => {
 // 		try {
-// 			const response = await fetch(`http://127.0.0.1:8001/dateManage/updateDate/${record.id}`, {
+// 			const response = await fetch(`http://127.0.0.1:8001/dateManage/updateDate/${record.id}`,
+// {
 // 				method: 'PUT',
 // 				headers: {
 // 					'Content-Type': 'application/json',
@@ -123,7 +125,8 @@ const defaultData: Reservation[] = [
 // 					onChange={(value) => {
 // 						if (value !== null) {
 // 							setReservations(prev =>
-// 								prev.map(item => item.id === record.id ? { ...item, available_peoples: value } : item)
+// 								prev.map(item => item.id === record.id ? 
+// { ...item, available_peoples: value } : item)
 // 							);
 // 						}
 // 					}}
@@ -160,10 +163,14 @@ const defaultData: Reservation[] = [
 // 						options={weekDays}
 // 						value={selectedRecord.available_days.map(day => weekDays[day - 1])}
 // 						onChange={(checkedValues) => {
-// 							const selectedDays = checkedValues.map(day => weekDays.indexOf(day) + 1);
+// 							const selectedDays = checkedValues.map(
+// day => weekDays.indexOf(day) + 1
+// );
 // 							const limit = selectedRecord.name === 'BADMINTON' ? 3 : 2;
 // 							if (selectedDays.length <= limit) {
-// 								setSelectedRecord(prev => prev ? { ...prev, available_days: selectedDays } : null);
+// 								setSelectedRecord(prev => prev ? { 
+// ...prev, available_days: selectedDays } : null
+// );
 // 							} else {
 // 								message.error(`最多只能选择${limit}个日期`);
 // 							}
@@ -197,7 +204,7 @@ const DateManage = () => {
 				setReservations(transformedData);
 			}
 		} catch (error) {
-			console.error("Error fetching reservations:", error);
+			console.error('Error fetching reservations:', error);
 			setReservations(defaultData);
 		}
 	};
@@ -223,7 +230,7 @@ const DateManage = () => {
 				message.error('保存失败');
 			}
 		} catch (error) {
-			console.error("Error updating reservation settings:", error);
+			console.error('Error updating reservation settings:', error);
 		}
 	};
 
@@ -252,15 +259,15 @@ const DateManage = () => {
 	};
 	const columns = [
 		{
-			title: "预约场馆",
-			dataIndex: "name",
-			key: "name",
+			title: '预约场馆',
+			dataIndex: 'name',
+			key: 'name',
 			width: 150,
 			render: (name: string) => nameMap[name as keyof typeof nameMap] || name
 		},
 		{
-			title: "可预约日期",
-			key: "available_days",
+			title: '可预约日期',
+			key: 'available_days',
 			width: 200,
 			render: (_: any, record: Reservation) => (
 				<span>
@@ -269,16 +276,16 @@ const DateManage = () => {
 			)
 		},
 		{
-			title: "修改日期",
-			key: "select",
+			title: '修改日期',
+			key: 'select',
 			width: 100,
 			render: (_: any, record: Reservation) => (
 				<Button onClick={() => handleOpenModal(record)}>修改</Button>
 			)
 		},
 		{
-			title: "最大可预约人数",
-			key: "available_peoples",
+			title: '最大可预约人数',
+			key: 'available_peoples',
 			width: 150,
 			render: (_: any, record: Reservation) => (
 				<InputNumber
@@ -289,7 +296,11 @@ const DateManage = () => {
 					onChange={(value) => {
 						if (value !== null) {
 							setReservations(prev =>
-								prev.map(item => item.id === record.id ? { ...item, available_peoples: value } : item)
+								prev.map(
+									item => item.id === record.id ? {
+										...item, available_peoples: value
+									} : item
+								)
 							);
 						}
 					}}
@@ -297,8 +308,8 @@ const DateManage = () => {
 			)
 		},
 		{
-			title: "操作",
-			key: "action",
+			title: '操作',
+			key: 'action',
 			width: 150,
 			render: (_: any, record: Reservation) => (
 				<Button type="primary" onClick={() => updateReservationSettings(record)}>
@@ -330,10 +341,14 @@ const DateManage = () => {
 						options={weekDays}
 						value={selectedRecord.available_days.map(day => weekDays[day - 1])}
 						onChange={(checkedValues) => {
-							const selectedDays = checkedValues.map(day => weekDays.indexOf(day) + 1);
+							const selectedDays = checkedValues.map(
+								day => weekDays.indexOf(day) + 1
+							);
 							const limit = selectedRecord.name === 'BADMINTON' ? 3 : 2;
 							if (selectedDays.length <= limit) {
-								setSelectedRecord(prev => prev ? { ...prev, available_days: selectedDays } : null);
+								setSelectedRecord(
+									prev => prev ? { ...prev, available_days: selectedDays } : null
+								);
 							} else {
 								message.error(`最多只能选择${limit}个日期`);
 							}

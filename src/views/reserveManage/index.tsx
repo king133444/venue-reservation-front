@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { Button, Layout, Modal, Table } from "antd";
-import dayjs from "dayjs";
-import axios from "axios";
-import DateManage from "../dateManage";
+import { Button, Layout, Modal, Table } from 'antd';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+
+import DateManage from '../dateManage';
 const { Content } = Layout;
 // const { Option } = Select;
 
@@ -15,7 +16,8 @@ const ReserveManage = () => {
 	// const disabledTime = (current: any) => {
 	// 	if (!current) {
 	// 		// 如果没有选中的日期，不禁用任何时间
-	// 		return { disabledHours: () => [], disabledMinutes: () => [], disabledSeconds: () => [] };
+	// 		return { disabledHours: () => [], 
+	// disabledMinutes: () => [], disabledSeconds: () => [] };
 	// 	}
 	// 	const isToday = current.format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD");
 	// 	if (isToday) {
@@ -82,7 +84,7 @@ const ReserveManage = () => {
 	//   }
 	// };
 
-	//连接前后端将预约信息显示在表格里
+	// 连接前后端将预约信息显示在表格里
 	const fetchReservations = async () => {
 		try {
 			const response = await axios.get('http://127.0.0.1:8001/reservation');
@@ -96,7 +98,7 @@ const ReserveManage = () => {
 		}
 	};
 
-	//监听这个函数
+	// 监听这个函数
 	useEffect(() => {
 		fetchReservations();
 	}, []);
@@ -111,47 +113,54 @@ const ReserveManage = () => {
 	// Columns for table
 	const columns = [
 		{
-			title: "id",
-			dataIndex: "id",
-			key: "id"
+			title: 'id',
+			dataIndex: 'id',
+			key: 'id'
 		},
 		{
-			title: "运动类型",
-			dataIndex: "type_name",
-			key: "type_name"
+			title: '运动类型',
+			dataIndex: 'type_name',
+			key: 'type_name'
 		},
 		{
-			title: "预约时间",
-			dataIndex: "time",
-			key: "time",
-			render: (text: dayjs.Dayjs) => dayjs(text).format("YYYY-MM-DD HH:mm")
+			title: '预约时间',
+			dataIndex: 'time',
+			key: 'time',
+			render: (text: dayjs.Dayjs) => dayjs(text).format('YYYY-MM-DD HH:mm')
 		},
 		{
-			title: "预约时长（小时）",
-			dataIndex: "duration",
-			key: "duration"
+			title: '预约时长（小时）',
+			dataIndex: 'duration',
+			key: 'duration'
 		},
 		{
-			title: "预约用户id",
-			dataIndex: "user_id",
-			key: "user_id"
+			title: '预约用户id',
+			dataIndex: 'user_id',
+			key: 'user_id'
 		},
 		{
-			title: "预约状态",
-			dataIndex: "status",
-			key: "status"
+			title: '预约状态',
+			dataIndex: 'status',
+			key: 'status'
 		},
 		{
-			title: "操作",
-			dataIndex: "operation",
-			// render: (_: any, record: any) => <Button onClick={() => showModal(record)}>详情</Button>
+			title: '操作',
+			dataIndex: 'operation',
+			// render: (_: any, record: any) => 
+			// <Button onClick={() => showModal(record)}>详情</Button>
 		}
 	];
 
 	return (
 		<>
-			<Layout style={{ borderRadius: "10px", backgroundColor: "white", overflow: "auto", height: "70vh" }}>
-				<Content style={{ padding: "20px" }}>
+			<Layout
+				style={{
+					borderRadius: '10px',
+					backgroundColor: 'white',
+					overflow: 'auto',
+					height: '70vh'
+				}}>
+				<Content style={{ padding: '20px' }}>
 					<Button type="primary" onClick={showDateManageModal}>
 						日期管理
 					</Button>
@@ -170,7 +179,8 @@ const ReserveManage = () => {
 					</Modal>
 				</Content>
 			</Layout>
-			{/* <Modal title="预约详情" open={isModalVisible} onOk={handleOk} onCancel={() => setIsModalVisible(false)}>
+			{/* <Modal title="预约详情" open={isModalVisible} onOk={handleOk} 
+			onCancel={() => setIsModalVisible(false)}>
 				<Form form={form} layout="vertical">
 					<Form.Item name="type_name" label="运动类型" rules={[{ required: true }]}>
 						<Select placeholder="请选择运动类型">
@@ -184,7 +194,8 @@ const ReserveManage = () => {
 								<DatePicker
 									showTime={{ format: "HH:mm" }}
 									disabledTime={disabledTime}
-									disabledDate={current => current && current < dayjs().startOf("day")}
+									disabledDate={current => current && 
+									current < dayjs().startOf("day")}
 								/>
 							</Form.Item>
 						</Col>
