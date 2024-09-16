@@ -1,7 +1,7 @@
 import { Navigate, useRoutes } from "react-router-dom";
 import Login from "@/views/login/index";
 import HomePage from "@/views/home/index";
-import ReserveManage from "@/views/home/reserveManage";
+import ReserveManage from "@/views/reserveManage";
 import AuthRoute from "./AuthRouter";
 import VenueDynamics from "@/views/venueDynamics";
 import PersonalManage from "@/views/personalManage";

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Layout, Table} from "antd";
+import { Button, Layout, Modal, Table } from "antd";
 import dayjs from "dayjs";
 import axios from "axios";
+import DateManage from "../dateManage";
 const { Content } = Layout;
 // const { Option } = Select;
 
@@ -10,6 +11,7 @@ const ReserveManage = () => {
 	// const [isModalVisible, setIsModalVisible] = useState(false);
 	// const [form] = Form.useForm();
 	const [reservations, setReservations] = useState<any>([]);
+	const [isModalVisible, setIsModalVisible] = useState(false);
 	// const disabledTime = (current: any) => {
 	// 	if (!current) {
 	// 		// 如果没有选中的日期，不禁用任何时间
@@ -54,15 +56,15 @@ const ReserveManage = () => {
 	// 		//准备要发送到后端的数据
 	// 		const reservationData = {
 	// 			type_name: values.type_name,
-    //             time: values.time.toDate(), //日期格式
-    //             duration: values.duration,
-    //             user_id: 1, // 假设您有用户ID，需要从某处获取
-    //             status: -1, // 假设新预约的初始状态为 'pending'
+	//             time: values.time.toDate(), //日期格式
+	//             duration: values.duration,
+	//             user_id: 1, // 假设您有用户ID，需要从某处获取
+	//             status: -1, // 假设新预约的初始状态为 'pending'
 	// 		}
-			
+
 	// 		// 发送POST请求到后端API
 	// 		const response = await axios.get('http://127.0.0.1:8001/reservation', reservationData);
-			
+
 	// 		// 如果后端返回成功响应，则更新前端的reservations状态
 	// 		if (response.status === 201) {
 	// 			// 将新创建的预约添加到reservations数组中
@@ -82,22 +84,29 @@ const ReserveManage = () => {
 
 	//连接前后端将预约信息显示在表格里
 	const fetchReservations = async () => {
-		try{
+		try {
 			const response = await axios.get('http://127.0.0.1:8001/reservation');
-			if(response.status === 200) {
+			if (response.status === 200) {
 				setReservations(response.data);
-			}else{
+			} else {
 				console.error('Failed to fetch reservations:', response);
 			}
-		}catch(error){
+		} catch (error) {
 			console.error('Error fetching reservations:', error);
 		}
 	};
 
 	//监听这个函数
-	useEffect(()=>{
+	useEffect(() => {
 		fetchReservations();
-	},[]);
+	}, []);
+	const showDateManageModal = () => {
+		setIsModalVisible(true);
+	};
+
+	const handleCancel = () => {
+		setIsModalVisible(false);
+	};
 
 	// Columns for table
 	const columns = [
@@ -143,13 +152,22 @@ const ReserveManage = () => {
 		<>
 			<Layout style={{ borderRadius: "10px", backgroundColor: "white", overflow: "auto", height: "70vh" }}>
 				<Content style={{ padding: "20px" }}>
-					{/* <Button type="primary" onClick={() => showModal(null)}>
-						新增预约
-					</Button> */}
-					<Table 
-					dataSource={reservations} 
-					columns={columns} 
-					rowKey="id" />
+					<Button type="primary" onClick={showDateManageModal}>
+						日期管理
+					</Button>
+					<Table
+						dataSource={reservations}
+						columns={columns}
+						rowKey="id" />
+					<Modal
+						title="日期管理"
+						open={isModalVisible}
+						onCancel={handleCancel}
+						footer={null} // 设置 footer 为 null，DateManage 内部有自己的保存按钮
+						width={1000}
+					>
+						<DateManage />
+					</Modal>
 				</Content>
 			</Layout>
 			{/* <Modal title="预约详情" open={isModalVisible} onOk={handleOk} onCancel={() => setIsModalVisible(false)}>
