@@ -1,9 +1,10 @@
-import { Button, Layout, Modal, Table } from 'antd';
+import { Button, Layout, message, Modal, Table } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 
 import DateManage from '../dateManage';
+import SetReservationModal from '../reservePeoples';
 const { Content } = Layout;
 // const { Option } = Select;
 
@@ -13,76 +14,31 @@ const ReserveManage = () => {
 	// const [form] = Form.useForm();
 	const [reservations, setReservations] = useState<any>([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
-	// const disabledTime = (current: any) => {
-	// 	if (!current) {
-	// 		// 如果没有选中的日期，不禁用任何时间
-	// 		return { disabledHours: () => [], 
-	// disabledMinutes: () => [], disabledSeconds: () => [] };
-	// 	}
-	// 	const isToday = current.format("YYYY-MM-DD") === dayjs().format("YYYY-MM-DD");
-	// 	if (isToday) {
-	// 		// 如果选中的日期是今天，则根据当前时间禁用过去的小时和分钟
-	// 		const hours = dayjs().hour();
-	// 		const minutes = dayjs().minute();
-	// 		return {
-	// 			disabledHours: () => Array.from({ length: hours }, (_, i) => i),
-	// 			disabledMinutes: (hour: number) => {
-	// 				if (hour === hours) {
-	// 					return Array.from({ length: minutes }, (_, i) => i);
-	// 				}
-	// 				return [];
-	// 			}
-	// 		};
-	// 	}
-	// 	// 如果选中的日期不是今天，则不禁用任何时间
-	// 	return { disabledHours: () => [], disabledMinutes: () => [], disabledSeconds: () => [] };
-	// };
+	const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
 
-	// // Function to show modal
-	// const showModal = (record: any) => {
-	// 	setIsModalVisible(true);
-	// 	if (record) {
-	// 		form.setFieldsValue({
-	// 			type_name: record.sportType,
-	// 			time: dayjs(record.date),
-	// 			duration: record.duration
-	// 		});
-	// 	}
-	// };
+	// 处理设置预约人数的逻辑
+	const handleOkSetting = async (sportType: string, availablePeoples: number) => {
+		try {
+			// 发送POST请求到后端API，确保URL与您的NestJS服务匹配
+			const response = await axios.post(
+				'http://127.0.0.1:8001/ReservationPeoples/updateReservationPeoples', {
+				name: sportType, // 注意：这里的字段名需要与后端DTO一致
+				available_peoples: availablePeoples,
+			});
+			if (response.status === 200) {
+				message.success('设置预约人数成功');
+				setIsSettingModalVisible(false); // 关闭模态框
+				// 可选：重新获取预约信息
+				fetchReservations();
+			} else {
+				console.error('设置预约人数失败:', response);
+			}
+		} catch (error) {
+			console.error('请求错误:', error);
+			// 可以在这里处理错误，例如显示一个错误消息
+		}
+	};
 
-	// Function to handle modal ok
-	// const handleOk = async () => {
-	// 	try {
-	// 		const values = await form.validateFields();
-	// 		values.duration = Number(values.duration)
-	// 		//准备要发送到后端的数据
-	// 		const reservationData = {
-	// 			type_name: values.type_name,
-	//             time: values.time.toDate(), //日期格式
-	//             duration: values.duration,
-	//             user_id: 1, // 假设您有用户ID，需要从某处获取
-	//             status: -1, // 假设新预约的初始状态为 'pending'
-	// 		}
-
-	// 		// 发送POST请求到后端API
-	// 		const response = await axios.get('http://127.0.0.1:8001/reservation', reservationData);
-
-	// 		// 如果后端返回成功响应，则更新前端的reservations状态
-	// 		if (response.status === 201) {
-	// 			// 将新创建的预约添加到reservations数组中
-	// 			setReservations([...reservations, response.data]);
-
-	// 		// setReservations([...reservations, { ...values, id: reservations.length + 1 }]);
-	// 		setIsModalVisible(false);
-	// 		form.resetFields(); // Reset form after submission
-	// 	} else {
-	// 		// 处理错误情况
-	// 		console.error('Failed to create reservation:', response);
-	// 	}
-	// } catch (errorInfo) {
-	// 	console.log("Failed:", errorInfo);
-	//   }
-	// };
 
 	// 连接前后端将预约信息显示在表格里
 	const fetchReservations = async () => {
@@ -161,8 +117,12 @@ const ReserveManage = () => {
 					height: '70vh'
 				}}>
 				<Content style={{ padding: '20px' }}>
-					<Button type="primary" onClick={showDateManageModal}>
+					<Button onClick={showDateManageModal}>
 						日期管理
+					</Button>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<Button onClick={() => setIsSettingModalVisible(true)}>
+						设置预约人数
 					</Button>
 					<Table
 						dataSource={reservations}
@@ -179,40 +139,11 @@ const ReserveManage = () => {
 					</Modal>
 				</Content>
 			</Layout>
-			{/* <Modal title="预约详情" open={isModalVisible} onOk={handleOk} 
-			onCancel={() => setIsModalVisible(false)}>
-				<Form form={form} layout="vertical">
-					<Form.Item name="type_name" label="运动类型" rules={[{ required: true }]}>
-						<Select placeholder="请选择运动类型">
-							<Option value="BADMINTON">羽毛球</Option>
-							<Option value="BASKETBALL">篮球</Option>
-						</Select>
-					</Form.Item>
-					<Row>
-						<Col span={16}>
-							<Form.Item name="time" label="预约时间" rules={[{ required: true }]}>
-								<DatePicker
-									showTime={{ format: "HH:mm" }}
-									disabledTime={disabledTime}
-									disabledDate={current => current && 
-									current < dayjs().startOf("day")}
-								/>
-							</Form.Item>
-						</Col>
-						<Col span={8}>
-							<Form.Item name="duration" label="预约时长" rules={[{ required: true }]}>
-								<Select placeholder="时长">
-									<Option value="15">15分钟</Option>
-									<Option value="30">30分钟</Option>
-									<Option value="1">1小时</Option>
-									<Option value="2">2小时</Option>
-									<Option value="3">3小时</Option>
-								</Select>
-							</Form.Item>
-						</Col>
-					</Row>
-				</Form>
-			</Modal> */}
+			<SetReservationModal
+				isVisible={isSettingModalVisible}
+				onCancel={() => setIsSettingModalVisible(false)}
+				onOk={handleOkSetting}
+			/>
 		</>
 	);
 };

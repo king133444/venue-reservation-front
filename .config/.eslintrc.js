@@ -26,6 +26,7 @@ module.exports = {
   ],
   plugins: ['simple-import-sort', 'react-hooks', '@typescript-eslint'],
   rules: {
+    "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 1, "maxBOF": 0 }],
     '@typescript-eslint/no-explicit-any': 'off',
     'no-unused-vars': 'off',
     'no-undef': 'off',

@@ -146,7 +146,6 @@ const VenueDynamics = () => {
 			<Layout>
 				<Content style={{ padding: '20px' }}>
 					<Button
-						type="primary"
 						onClick={() => showModal()}
 						style={{ marginBottom: '20px' }}>
 						新增动态
