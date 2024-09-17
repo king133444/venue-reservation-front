@@ -16,28 +16,17 @@ const Home: React.FC = () => {
 	const location = useLocation();
 	const items = getItems();
 	// 通过menu值改变路由
-	const [selectKey, setSelectKey] = useState<string>();
-	// 通过路由获取menu值，显示在菜单
-	const [selectedKey, setSelectedKey] = useState(getMenuKeys(location.pathname));
+	const [selectKey, setSelectKey] = useState(getMenuKeys(location.pathname));
 
 	const {
 		token: { colorBgContainer, borderRadiusLG }
 	} = theme.useToken();
 
 	useEffect(() => {
-		if (selectKey) {
-			navigate(getRoutes(selectKey));
-		}
-	}, [navigate, selectKey]);
-	useEffect(() => {
 		const menuKey = getMenuKeys(location.pathname);
+		setSelectKey(menuKey);
+	}, [location.pathname]);
 
-		if (menuKey !== selectKey) {
-			setSelectKey(menuKey);
-		}
-
-		setSelectedKey(menuKey);
-	}, [location.pathname, selectKey]);
 
 	return (
 		<>
@@ -56,15 +45,16 @@ const Home: React.FC = () => {
 							marginBottom: '-30px'
 						}}
 					>
-						<img src={siderLogo} style={{ width: '100%' }} />
+						< img src={siderLogo} style={{ width: '100%' }} />
 					</div>
 
 					<Menu
 						mode="inline"
 						onSelect={({ key }) => {
 							setSelectKey(key);
+							navigate(getRoutes(key));
 						}}
-						selectedKeys={[selectedKey]}
+						selectedKeys={[selectKey]}
 						// defaultSelectedKeys={['menu5']}
 						items={items}
 					/>
