@@ -1,6 +1,6 @@
 import './DateManage.css';
 
-import { Button, Checkbox, InputNumber, message, Modal, Table } from 'antd';
+import { Button, Checkbox, message, Modal, Table } from 'antd';
 import { useEffect, useState } from 'react';
 
 export interface Reservation {
@@ -41,7 +41,6 @@ const DateManage = () => {
 					name: item.name,
 					available_days: Array.isArray(item.available_days) ? item.available_days : [],
 					available_peoples: item.available_peoples,
-					status: item.status || 0,
 				}));
 
 				setReservations(transformedData);
@@ -126,40 +125,6 @@ const DateManage = () => {
 				<Button onClick={() => handleOpenModal(record)}>修改</Button>
 			)
 		},
-		{
-			title: '最大可预约人数',
-			key: 'available_peoples',
-			width: 150,
-			render: (_: any, record: Reservation) => (
-				<InputNumber
-					min={1}
-					max={27}
-					value={record.available_peoples}
-					style={{ width: '80px' }}
-					onChange={(value) => {
-						if (value !== null) {
-							setReservations(prev =>
-								prev.map(
-									item => item.id === record.id ? {
-										...item, available_peoples: value
-									} : item
-								)
-							);
-						}
-					}}
-				/>
-			)
-		},
-		{
-			title: '操作',
-			key: 'action',
-			width: 150,
-			render: (_: any, record: Reservation) => (
-				<Button type="primary" onClick={() => updateReservationSettings(record)}>
-					保存设置
-				</Button>
-			)
-		}
 	];
 
 	return (
