@@ -1,5 +1,6 @@
 import { DeleteOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, Form, Input, message, Modal, Switch, Table, Upload } from 'antd';
+import { Button, Form, Input, Layout, message, Modal, Switch, Table, Upload } from 'antd';
+import { Content } from 'antd/es/layout/layout';
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -231,24 +232,39 @@ const UserManagement = () => {
 	};
 
 	return (
-		<div>
-			<div style={{ display: 'flex', justifyContent: 'space-between' }}>
-				<Button onClick={openAddModal}>新增用户</Button>
-				<Upload {...uploadProps}>
-					<Button icon={<UploadOutlined />}>文件批量上传</Button>
-				</Upload>
-			</div>
-			<br />
-			<Table
-				dataSource={data}
-				columns={columns}
-				loading={loading}
-				pagination={{
-					pageSize: 10,
-					onChange: page => setCurrentPage(page)
+		<>
+			<Layout
+				style={{
+					borderRadius: '10px',
+					backgroundColor: 'white',
+					overflow: 'auto',
+					height: '70vh',
+					marginTop: 20,
 				}}
-				rowKey="id"
-			/>
+			>
+				<Content style={{ padding: '20px' }}>
+					<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+						<Button onClick={openAddModal}>新增用户</Button>
+						<Upload {...uploadProps}>
+							<Button icon={<UploadOutlined />}>文件批量上传</Button>
+						</Upload>
+					</div>
+					<br />
+					<div style={{ minHeight: '500px' }}> {/* 设置一个合适的最小高度 */}
+						<Table
+							dataSource={data}
+							columns={columns}
+							loading={loading}
+							pagination={{
+								pageSize: 10,
+								onChange: page => setCurrentPage(page),
+							}}
+							rowKey="id"
+						/>
+					</div>
+
+				</Content>
+			</Layout>
 
 			<Modal
 				title="新增用户"
@@ -393,7 +409,7 @@ const UserManagement = () => {
 					</Form>
 				)}
 			</Modal>
-		</div>
+		</>
 	);
 };
 

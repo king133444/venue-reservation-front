@@ -3,11 +3,8 @@ import { Button, Form, Input, message } from 'antd'; // 引入 Space 组件
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import api from '@/api';
 import { HOME_URL } from '@/config/config';
-
-interface LocationState {
-	from?: string;
-}
 
 const LoginForm = () => {
 	const navigate = useNavigate();
@@ -18,39 +15,26 @@ const LoginForm = () => {
 	// 登录
 	const handleSubmit = async () => {
 		const { username, password } = form.getFieldsValue();
-
+		setLoading(true);
 		try {
-			setLoading(true);
-			// const result: any = await api.Login({
-			//   name: username,
-			//   password
-			// })
-			// const { success, data, message: info } = result
-
-			sessionStorage.setItem('username', username);
-			sessionStorage.setItem('email', password);
-			sessionStorage.setItem('roleId', '1');
-			sessionStorage.setItem('balance', '12');
-
-			sessionStorage.setItem('id', '1');
-			message.success('登录成功！');
-			// 检查路由状态中是否有 'from' 属性
-			const state = location.state as LocationState;
-			if (state?.from) {
-				// 如果有，跳转回用户试图访问的页面
-				navigate(state.from);
+			const response: any = await api.Login({ username, password });
+			// 检查登录是否成功
+			if (response.data.success) {
+				sessionStorage.setItem('username', username); // 根据实际需求决定是否需要
+				message.success(response.data.message);
+				navigate(location.state?.from || HOME_URL);
 			} else {
-				// 如果没有，跳转到默认页面，例如首页
-				navigate(HOME_URL);
+				// 登录失败，显示错误消息，不跳转页面
+				message.error(response.data.message || '登录失败');
 			}
-			navigate(HOME_URL);
-		} catch (error: any) {
-			console.log(error);
-			message.error(error.response.data.message);
+		} catch (error) {
+			// API调用异常，显示错误消息，不跳转页面
+			message.error('登录失败');
 		} finally {
 			setLoading(false);
 		}
 	};
+
 	return (
 		<>
 			<Form

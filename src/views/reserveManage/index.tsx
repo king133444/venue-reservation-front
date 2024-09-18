@@ -39,7 +39,6 @@ const ReserveManage = () => {
 		}
 	};
 
-
 	// 连接前后端将预约信息显示在表格里
 	const fetchReservations = async () => {
 		try {
@@ -109,40 +108,52 @@ const ReserveManage = () => {
 
 	return (
 		<>
-			<Layout
-				style={{
-					borderRadius: '10px',
-					backgroundColor: 'white',
-					overflow: 'auto',
-					height: '70vh'
+			<Layout style={{
+				marginTop: 20,
+				borderRadius: '10px',
+				backgroundColor: 'white',
+				display: 'flex',
+				flexDirection: 'column',
+				height: '70vh', // 调整整体高度以适应不同的屏幕
+			}}>
+				<Content style={{
+					padding: '20px',
+					overflow: 'auto', flex: 1, display: 'flex', flexDirection: 'column'
 				}}>
-				<Content style={{ padding: '20px' }}>
-					<Button onClick={showDateManageModal}>
-						日期管理
-					</Button>
-					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<Button onClick={() => setIsSettingModalVisible(true)}>
-						设置预约人数
-					</Button>
-					<Table
-						dataSource={reservations}
-						columns={columns}
-						rowKey="id" />
-					<Modal
-						title="日期管理"
-						open={isModalVisible}
-						onCancel={handleCancel}
-						footer={null} // 设置 footer 为 null，DateManage 内部有自己的保存按钮
-						width={1000}
-					>
-						<DateManage />
-					</Modal>
+					<div style={{ marginBottom: '16px' }}>
+						<Button onClick={showDateManageModal}>
+							日期管理
+						</Button>
+						<Button
+							onClick={() => setIsSettingModalVisible(true)}
+							style={{ marginLeft: '10px' }}>
+							设置预约人数
+						</Button>
+					</div>
+					<div style={{ flex: 1, overflow: 'auto' }}>
+						<Table
+							dataSource={reservations}
+							columns={columns}
+							rowKey="id"
+							pagination={{ pageSize: 10 }}
+							style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+						/>
+					</div>
 				</Content>
 			</Layout>
+			<Modal
+				title="日期管理"
+				open={isModalVisible}
+				onCancel={handleCancel}
+				footer={null}
+				width={1000}
+			>
+				<DateManage />
+			</Modal>
 			<SetReservationModal
 				isVisible={isSettingModalVisible}
 				onCancel={() => setIsSettingModalVisible(false)}
-				onOk={handleOkSetting}
+				onOk={(sportType, availablePeoples) => handleOkSetting(sportType, availablePeoples)}
 			/>
 		</>
 	);
