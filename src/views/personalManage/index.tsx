@@ -1,7 +1,6 @@
 import { DeleteOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Layout, message, Modal, Switch, Table, Upload } from 'antd';
 import { Content } from 'antd/es/layout/layout';
-import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
@@ -46,7 +45,7 @@ const UserManagement = () => {
 			const response: any = await api.GetUsers({});
 			setData(response.data);
 		} catch (error) {
-			console.error('获取数据错误:', error);
+			message.error('获取数据错误');
 		} finally {
 			setLoading(false);
 		}
@@ -55,16 +54,26 @@ const UserManagement = () => {
 	const handleUpload = async (file: string | Blob) => {
 		const formData = new FormData();
 		formData.append('file', file);
-
 		try {
 			const response: any = await api.UploadUsers(formData);
-			message.success(response.message || '批量上传成功');
+
+			if (!response.success) {
+				message.error(response.message);
+				return;
+			}
+			message.success(response.message);
 			fetchData();
 		} catch (error) {
-			message.error('批量上传失败');
-			console.error('上传文件错误:', error);
+			let errorMessage = '批量上传失败';
+			if (axios.isAxiosError(error) && error.response) {
+				errorMessage = error.response.data.message || errorMessage;
+			} else if (error instanceof Error) {
+				errorMessage = error.message;
+			}
+			message.error(errorMessage);
 		}
 	};
+
 	const showdDeleteConfirm = (record: any) => {
 		Modal.confirm({
 			title: '您确定要删除这个用户吗？',
@@ -82,7 +91,6 @@ const UserManagement = () => {
 			fetchData();
 		} catch (error) {
 			message.error('删除用户失败');
-			console.error('删除用户错误:', error);
 		}
 	};
 
@@ -106,16 +114,25 @@ const UserManagement = () => {
 		try {
 			const adjustedValues = {
 				...values,
-				is_electrical_employee: values.is_electrical_employee ? 1 : 0
+				is_electrical_employee: values.is_electrical_employee ? 1 : 0,
 			};
-			const response = (await api.CreateUser(adjustedValues)) as AxiosResponse;
-			message.success(response.data.message);
-			setShowAddModal(false);
-			form.resetFields();
-			fetchData();
+			const response: any = await api.CreateUser(adjustedValues);
+
+			// 检查后端响应的success字段
+			if (!response.data.success) {
+				message.error(response.data.message);
+			} else {
+				message.success(response.data.message);
+				setShowAddModal(false);
+				form.resetFields();
+				fetchData();
+			}
 		} catch (error) {
-			message.error('新增用户失败');
-			console.error('新增用户错误:', error);
+			let errorMessage = '新增用户失败';
+			if (axios.isAxiosError(error) && error.response) {
+				errorMessage = error.response.data.message || errorMessage;
+			}
+			message.error(errorMessage);
 		}
 		setSelectedUser(null);
 	};
@@ -136,17 +153,14 @@ const UserManagement = () => {
 			let errorMessage = '更新用户失败';
 			if (axios.isAxiosError(error)) {
 				if (error.response) {
-					console.error('Axios Error Response:', error.response);
 					errorMessage = error.response.data?.message || '请求失败，未能获取详细信息';
 				} else {
-					console.error('Axios Error No Response:', error);
 					errorMessage = '请求失败，未收到响应';
 				}
 			} else if (error instanceof Error) {
 				errorMessage = error.message;
 			}
 			message.error(errorMessage);
-			console.error('更新用户错误:', error);
 		}
 	};
 
