@@ -12,7 +12,7 @@ export default {
 	 */
 	// 登录
 	Login: (params: any) => {
-		return fetchPost('/auth/login', params);
+		return fetchPost('/users/login', params);
 	},
 	// 注册
 	Signup: (params: any) => {

@@ -1,5 +1,8 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, Card, DatePicker, Form, Input, Layout, List, message, Modal, Upload } from 'antd';
+import {
+	Button, Card, DatePicker, Form, Input,
+	Layout, List, message, Modal, Switch, Upload
+} from 'antd';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 
@@ -13,6 +16,7 @@ interface Dynamic {
 	content: string;
 	publish_date: Date;
 	image: string | null;
+	isVisible: boolean;
 }
 
 const VenueDynamics = () => {
@@ -35,7 +39,7 @@ const VenueDynamics = () => {
 			const dynamics = response as Dynamic[];
 			setDynamics(dynamics);
 		} catch (error) {
-			console.error('Error fetching dynamics:', error);
+			message.error('获取用户失败');
 		}
 		setLoading(false);
 	};
@@ -58,7 +62,6 @@ const VenueDynamics = () => {
 	};
 
 	const handleCreate = async () => {
-		console.log('handleCreate is triggered');
 		try {
 			const values = await form.validateFields();
 			const formattedValues = {
@@ -67,13 +70,11 @@ const VenueDynamics = () => {
 				// .format("YYYY-MM-DD HH:mm:ss"),
 				image: values.image || undefined
 			};
-			console.log('values:', formattedValues);
 			await api.CreatePost(formattedValues);
 			message.success('场馆动态创建成功');
 			setIsModalVisible(false);
 			fetchDynamics();
 		} catch (error) {
-			console.log('Create Failed:', error);
 			message.error('创建操作失败，请检查输入或稍后再试');
 		}
 	};
@@ -90,13 +91,11 @@ const VenueDynamics = () => {
 				publish_date: values.publish_date,
 				image: values.image || undefined
 			};
-			console.log('values:', formattedValues);
 			await api.UpdatePost({ id: selectedDynamic.id, ...formattedValues });
 			message.success('场馆动态更新成功');
 			setIsModalVisible(false);
 			fetchDynamics();
 		} catch (error) {
-			console.log('Update Failed:', error);
 			message.error('更新操作失败，请检查输入或稍后再试');
 		}
 	};
@@ -112,7 +111,6 @@ const VenueDynamics = () => {
 	const handleDelete = async (id: number) => {
 		try {
 			const response: any = await api.DeletePost({ id });
-			console.log('LOG', response);
 
 			if (response.success) {
 				message.success(response.message);
@@ -121,7 +119,6 @@ const VenueDynamics = () => {
 			}
 			fetchDynamics();
 		} catch (error) {
-			console.error('Delete dynamic error:', error);
 			message.error('删除失败');
 		}
 	};
@@ -141,30 +138,61 @@ const VenueDynamics = () => {
 		return false; // 阻止默认上传行为
 	};
 
+	const handleVisibilityChange = async (id: number, isVisible: boolean) => {
+		setLoading(true);
+		try {
+			// 替换为您的API调用
+			await api.UpdatePost({ id, isVisible });
+			message.success('帖子状态更新成功');
+			// 更新本地状态以反映更改
+			setDynamics(dynamics.map(
+				dynamic => dynamic.id === id ? { ...dynamic, isVisible } : dynamic));
+		} catch (error) {
+			message.error('更新失败，请稍后再试');
+		}
+		setLoading(false);
+	};
+
 	return (
 		<>
-			<Layout>
+			<Layout style={{
+				marginTop: 20,
+				borderRadius: '10px',
+				backgroundColor: 'white',
+				overflow: 'auto',
+				height: '70vh'
+			}}>
 				<Content style={{ padding: '20px' }}>
 					<Button
 						onClick={() => showModal()}
-						style={{ marginBottom: '20px' }}>
+						style={{ marginBottom: '20px' }}
+					>
 						新增动态
 					</Button>
 					<List
 						loading={loading}
 						grid={{ gutter: 16, column: 4 }}
 						dataSource={dynamics}
-						renderItem={item => (
+						renderItem={(item, index) => ( // 注意这里增加了 index 参数
 							<List.Item>
 								<Card
-									title={item.title}
-									extra={<Button onClick={() => showModal(item)}>编辑</Button>}
+									title={`${index + 1}. ${item.title}`} // 在标题前加上序号
+									extra={
+										<div style={{ display: 'flex', alignItems: 'center' }}>
+											<Switch
+												checkedChildren="可见"
+												unCheckedChildren="隐藏"
+												checked={item.isVisible}
+												onChange={checked =>
+													handleVisibilityChange(item.id, checked)}
+												style={{ marginRight: 8 }}
+											/>
+											<Button onClick={() => showModal(item)}>编辑</Button>
+										</div>
+									}
 									actions={[
-										<Button
-											key="delete"
-											onClick={() => showdDeleteConfirm(item.id)}>
-											删除
-										</Button>
+										<Button key="delete"
+											onClick={() => showdDeleteConfirm(item.id)}>删除</Button>
 									]}
 								>
 									<p>{item.content}</p>
