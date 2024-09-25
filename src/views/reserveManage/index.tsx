@@ -1,6 +1,9 @@
-import { Button, Descriptions, Layout, message, Modal, Table, Tag } from 'antd';
+import './reserveManage.css';
+
+import { Button, Descriptions, Layout, message, Modal, Pagination, Table, Tag } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import type { SetStateAction } from 'react';
 import { useEffect, useState } from 'react';
 
 import DateManage from '../dateManage';
@@ -8,12 +11,23 @@ import SetReservationModal from '../reservePeoples';
 const { Content } = Layout;
 
 const ReserveManage = () => {
-	// State for showModal, form values, and reservations
-	// const [isModalVisible, setIsModalVisible] = useState(false);
-	// const [form] = Form.useForm();
 	const [reservations, setReservations] = useState<any>([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
+	const [currentPage, setCurrentPage] = useState(1);
+	const pageSize = 10; // 每页显示的条目数
+	const total = reservations.length; // 总数据量
+
+	// 计算当前页的数据
+	const currentData = reservations.slice(
+		(currentPage - 1) * pageSize,
+		currentPage * pageSize
+	);
+
+	// 分页改变时的处理函数
+	const handlePageChange = (page: SetStateAction<number>) => {
+		setCurrentPage(page);
+	};
 
 	const [detailModalVisible, setDetailModalVisible] = useState(false);
 	const [selectedUserId, setSelectedUserId] = useState(0);
@@ -131,6 +145,22 @@ const ReserveManage = () => {
 		}
 	};
 
+	const showDeleteConfirm = (reservationId: number) => {
+		Modal.confirm({
+			title: '确认删除这个预约吗？',
+			content: '该操作无法撤销',
+			okText: '确认',
+			okType: 'danger',
+			cancelText: '取消',
+			onOk() {
+				deleteReservation(reservationId);
+			},
+			onCancel() {
+				console.log('取消删除');
+			},
+		});
+	};
+
 	// 使用useEffect来控制fetchUserDetails调用，仅在detailModalVisible为true时请求
 	useEffect(() => {
 		if (detailModalVisible) {
@@ -206,7 +236,7 @@ const ReserveManage = () => {
 							<Button onClick={() => cancelReservation(record.id)}>
 								取消预约</Button>}
 						{(record.status === 2 || record.status === 3) &&
-							<Button onClick={() => deleteReservation(record.id)}>删除预约</Button>}
+							<Button onClick={() => showDeleteConfirm(record.id)}>删除预约</Button>}
 					</div>
 				);
 			}
@@ -247,7 +277,8 @@ const ReserveManage = () => {
 				backgroundColor: 'white',
 				display: 'flex',
 				flexDirection: 'column',
-				height: '70vh', // 调整整体高度以适应不同的屏幕
+				height: '1100px', // 调整整体高度以适应不同的屏幕
+				position: 'relative'
 			}}>
 				<Content style={{
 					padding: '20px',
@@ -265,11 +296,25 @@ const ReserveManage = () => {
 					</div>
 					<div style={{ flex: 1, overflow: 'auto' }}>
 						<Table
-							dataSource={reservations}
+							dataSource={currentData} // 使用分片后的数据
 							columns={columns}
 							rowKey="id"
-							pagination={{ pageSize: 10 }}
+							pagination={false} // 禁用内置分页
 							style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+							className="custom-table" // 应用自定义样式
+						/>
+					</div>
+					<div style={{
+						position: 'absolute',
+						right: 20, // 根据实际需要调整
+						bottom: 20, // 根据实际需要调整
+					}}>
+						<Pagination
+							current={currentPage}
+							pageSize={pageSize}
+							total={total}
+							onChange={handlePageChange}
+							showTotal={(total) => `总共 ${total} 条`} // 显示总数
 						/>
 					</div>
 				</Content>

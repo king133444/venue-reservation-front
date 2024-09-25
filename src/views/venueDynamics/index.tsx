@@ -1,7 +1,7 @@
 import { UploadOutlined } from '@ant-design/icons';
 import {
 	Button, Card, DatePicker, Form, Input,
-	Layout, List, message, Modal, Switch, Upload
+	Layout, List, message, Modal, Pagination, Switch, Upload
 } from 'antd';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -27,6 +27,19 @@ const VenueDynamics = () => {
 	const [isEditMode, setIsEditMode] = useState(false);
 	const [imagePreview, setImagePreview] = useState('');
 	const [form] = Form.useForm();
+	const [currentPage, setCurrentPage] = useState(1);
+	const pageSize = 8; // 假设每页显示8条数据
+	const total = dynamics.length; // 总数据量
+	// 获取当前页的数据
+	const currentData = dynamics.slice(
+		(currentPage - 1) * pageSize,
+		currentPage * pageSize
+	);
+
+	// 分页改变时的处理函数
+	const handlePageChange = (page: React.SetStateAction<number>) => {
+		setCurrentPage(page);
+	};
 
 	useEffect(() => {
 		fetchDynamics();
@@ -160,7 +173,8 @@ const VenueDynamics = () => {
 				borderRadius: '10px',
 				backgroundColor: 'white',
 				overflow: 'auto',
-				height: '70vh'
+				height: '1100px',
+				position: 'relative', // 使Layout相对定位
 			}}>
 				<Content style={{ padding: '20px' }}>
 					<Button
@@ -172,7 +186,7 @@ const VenueDynamics = () => {
 					<List
 						loading={loading}
 						grid={{ gutter: 16, column: 4 }}
-						dataSource={dynamics}
+						dataSource={currentData} // 使用当前页的数据
 						renderItem={(item, index) => ( // 注意这里增加了 index 参数
 							<List.Item>
 								<Card
@@ -195,19 +209,37 @@ const VenueDynamics = () => {
 											onClick={() => showdDeleteConfirm(item.id)}>删除</Button>
 									]}
 								>
-									<p>{item.content}</p>
-									{item.image && (
-										<img
-											src={`data:image/png;base64,${item.image}`}
-											alt="dynamic"
-											style={{ maxWidth: '100%', maxHeight: '100px' }}
-										/>
-									)}
-									<p>{moment(item.publish_date).format('YYYY-MM-DD HH:mm')}</p>
+									{/* 为卡片内容添加滚动条的容器 */}
+									<div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+										<p>{item.content}</p>
+										{item.image && (
+											<img
+												src={`data:image/png;base64,${item.image}`}
+												alt="dynamic"
+												style={{ maxWidth: '100%', maxHeight: '100px' }}
+											/>
+										)}
+										<p>
+											{moment(item.publish_date).format('YYYY-MM-DD HH:mm')}
+										</p>
+									</div>
 								</Card>
 							</List.Item>
 						)}
 					/>
+					<div style={{
+						position: 'absolute',
+						right: 20, // 根据实际需要调整
+						bottom: 20, // 根据实际需要调整
+					}}>
+						<Pagination
+							current={currentPage}
+							pageSize={pageSize}
+							total={total}
+							onChange={handlePageChange}
+							showTotal={(total) => `总共 ${total} 条`} // 显示总数
+						/>
+					</div>
 				</Content>
 			</Layout>
 			<Modal

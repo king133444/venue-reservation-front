@@ -1,0 +1,5 @@
+.custom-table .ant-table-cell {
+  font-size: 14px; /* 调整字体大小 */
+  height: 50px; /* 调整行高 */
+  line-height: 50px; /* 确保文本垂直居中 */
+}
