@@ -48,8 +48,8 @@ const VenueDynamics = () => {
 	const fetchDynamics = async () => {
 		setLoading(true);
 		try {
-			const response = await api.GetPosts({});
-			const dynamics = response as Dynamic[];
+			const response: any = await api.GetPosts({});
+			const dynamics = response.data as Dynamic[];
 			setDynamics(dynamics);
 		} catch (error) {
 			message.error('获取用户失败');
