@@ -1,7 +1,8 @@
 import { DeleteOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
+import { RedoOutlined } from '@ant-design/icons';
 import {
 	Button, Form, Input, Layout, message,
-	Modal, Pagination, Switch, Table, Upload
+	Modal, Pagination, Space, Switch, Table, Upload
 } from 'antd';
 import { Content } from 'antd/es/layout/layout';
 import axios from 'axios';
@@ -29,6 +30,8 @@ const UserManagement = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const pageSize = 10; // 假设每页显示10条数据
 	const total = data.length; // 总数据量
+	const [originalData, setOriginalData] = useState([]); // 添加一个状态来保存原始数据
+	const [searchName, setSearchName] = useState('');
 
 	// 根据当前页和每页大小计算当前页的数据
 	const currentData = data.slice(
@@ -60,11 +63,23 @@ const UserManagement = () => {
 		try {
 			setLoading(true);
 			const response: any = await api.GetUsers({});
+			setOriginalData(response.data); // 保存原始数据
 			setData(response.data);
 		} catch (error) {
 			message.error('获取数据错误');
 		} finally {
 			setLoading(false);
+		}
+	};
+
+	const handleSearch = () => {
+		if (!searchName.trim()) {
+			setData(originalData); // 搜索框为空时显示所有数据
+		} else {
+			const filteredData = originalData.filter((item: any) =>
+				item.name.toLowerCase().includes(searchName.toLowerCase())
+			) as typeof originalData;
+			setData(filteredData); // 更新数据为过滤后的数据
 		}
 	};
 
@@ -262,6 +277,11 @@ const UserManagement = () => {
 		showUploadList: false // 不显示文件列表
 	};
 
+	const handleReset = () => {
+		setSearchName(''); // 清空搜索框
+		fetchData(); // 重新获取并显示所有用户数据
+	};
+
 	return (
 		<>
 			<Layout
@@ -276,10 +296,20 @@ const UserManagement = () => {
 			>
 				<Content style={{ padding: '20px' }}>
 					<div style={{ display: 'flex', justifyContent: 'space-between' }}>
-						<Button onClick={openAddModal}>新增用户</Button>
-						<Upload {...uploadProps}>
-							<Button icon={<UploadOutlined />}>文件批量上传</Button>
-						</Upload>
+						<Space wrap size={'middle'}>
+							<Button onClick={openAddModal}>新增用户</Button>
+							<Input
+								placeholder="根据姓名搜索"
+								value={searchName}
+								onChange={(e) => setSearchName(e.target.value)}
+								style={{ width: 200 }}
+							/>
+							<Button onClick={handleSearch}>搜索</Button>
+							<Button onClick={handleReset}><RedoOutlined />重置</Button>
+							<Upload {...uploadProps}>
+								<Button icon={<UploadOutlined />}>文件批量上传</Button>
+							</Upload>
+						</Space>
 					</div>
 					<br />
 					<div style={{ minHeight: '500px' }}> {/* 设置一个合适的最小高度 */}
