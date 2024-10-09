@@ -3,3 +3,10 @@
   height: 50px; /* 调整行高 */
   line-height: 50px; /* 确保文本垂直居中 */
 }
+.reservationTable .ant-table {
+  height: 945px;
+}
+
+.reservationTable .ant-table-cell {
+  height: 80px; /* 调整行高 */
+}

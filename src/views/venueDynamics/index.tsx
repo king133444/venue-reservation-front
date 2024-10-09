@@ -3,8 +3,9 @@ import {
 	Button, Card, DatePicker, Form, Input,
 	Layout, List, message, Modal, Pagination, Switch, Upload
 } from 'antd';
+import dayjs from 'dayjs';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import api from '@/api'; // 确保这里的路径正确指向您的API函数
 
@@ -30,6 +31,7 @@ const VenueDynamics = () => {
 	const [currentPage, setCurrentPage] = useState(1);
 	const pageSize = 8; // 假设每页显示8条数据
 	const total = dynamics.length; // 总数据量
+	const [filterDate, setFilterDate] = useState<string | null>(null);
 	// 获取当前页的数据
 	const currentData = dynamics.slice(
 		(currentPage - 1) * pageSize,
@@ -41,21 +43,27 @@ const VenueDynamics = () => {
 		setCurrentPage(page);
 	};
 
-	useEffect(() => {
-		fetchDynamics();
-	}, []);
-
-	const fetchDynamics = async () => {
+	const fetchDynamics = useCallback(async () => {
+		let params = {};
 		setLoading(true);
+		if (filterDate !== null) {
+			params = {
+				'date': dayjs(filterDate).format('YYYY-MM-DD')
+			};
+		};
 		try {
-			const response: any = await api.GetPosts({});
+			const response: any = await api.GetPosts(params);
 			const dynamics = response.data as Dynamic[];
 			setDynamics(dynamics);
 		} catch (error) {
-			message.error('获取用户失败');
+			message.error('获取场馆动态失败');
 		}
 		setLoading(false);
-	};
+	}, [filterDate]); // 依赖于 filterDate
+
+	useEffect(() => {
+		fetchDynamics();
+	}, [fetchDynamics]); // fetchDynamics 现在是一个依赖
 
 	const showModal = (dynamic: Dynamic | null = null) => {
 		setIsEditMode(dynamic !== null);
@@ -179,10 +187,22 @@ const VenueDynamics = () => {
 				<Content style={{ padding: '20px' }}>
 					<Button
 						onClick={() => showModal()}
-						style={{ marginBottom: '20px' }}
+						style={{ marginBottom: '20px', marginRight: '20px' }}
 					>
 						新增动态
 					</Button>
+					根据日期查询：
+					<DatePicker
+						style={{ marginRight: '15px' }}
+						value={filterDate ? dayjs(filterDate) : null}
+						onChange={
+							(
+								date,
+								dateString
+							) => setFilterDate(date ? (dateString as string) : null)
+						}
+					/>
+
 					<List
 						loading={loading}
 						grid={{ gutter: 16, column: 4 }}
