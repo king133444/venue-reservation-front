@@ -90,8 +90,11 @@ const DateManage = () => {
 			const selectedDays = selectedRecord.available_days;
 			const requiredDays = selectedRecord.name === 'BADMINTON' ? 3 : 2;
 
-			if (selectedDays.length < requiredDays) {
-				message.error(`请至少选择${requiredDays}个日期`);
+			const week1Days = selectedDays.filter(day => day <= 7);
+			const week2Days = selectedDays.filter(day => day > 7 && day <= 14);
+
+			if (week1Days.length > requiredDays || week2Days.length > requiredDays) {
+				message.error(`每周最多选择${requiredDays}个日期`);
 				return;
 			}
 
@@ -108,12 +111,24 @@ const DateManage = () => {
 			render: (name: string) => nameMap[name as keyof typeof nameMap] || name
 		},
 		{
-			title: '可预约日期',
-			key: 'available_days',
+			title: '本周可预约日期',
+			key: 'week1_days',
 			width: 200,
 			render: (_: any, record: Reservation) => (
 				<span>
-					{record.available_days.map(day => weekDays[day - 1]).join(', ')}
+					{record.available_days.filter(
+						day => day <= 7).map(day => weekDays[day - 1]).join(', ')}
+				</span>
+			)
+		},
+		{
+			title: '下周可预约日期',
+			key: 'week2_days',
+			width: 200,
+			render: (_: any, record: Reservation) => (
+				<span>
+					{record.available_days.filter(
+						day => day > 7 && day <= 14).map(day => weekDays[day - 8]).join(', ')}
 				</span>
 			)
 		},
@@ -145,23 +160,56 @@ const DateManage = () => {
 				width={1000}
 			>
 				{selectedRecord && (
-					<Checkbox.Group
-						options={weekDays}
-						value={selectedRecord.available_days.map(day => weekDays[day - 1])}
-						onChange={(checkedValues) => {
-							const selectedDays = checkedValues.map(
-								day => weekDays.indexOf(day) + 1
-							);
-							const limit = selectedRecord.name === 'BADMINTON' ? 3 : 2;
-							if (selectedDays.length <= limit) {
-								setSelectedRecord(
-									prev => prev ? { ...prev, available_days: selectedDays } : null
+					<>
+						<div style={{ marginBottom: '20px' }}>本周可预约日期</div>
+						<Checkbox.Group
+							options={weekDays}
+							value={selectedRecord.available_days.filter(
+								day => day <= 7).map(day => weekDays[day - 1])}
+							onChange={(checkedValues) => {
+								const selectedDays = checkedValues.map(
+									day => weekDays.indexOf(day) + 1
 								);
-							} else {
-								message.error(`最多只能选择${limit}个日期`);
-							}
-						}}
-					/>
+								const limit = selectedRecord.name === 'BADMINTON' ? 3 : 2;
+								if (selectedDays.length <= limit) {
+									setSelectedRecord(
+										prev => prev ? {
+											...prev,
+											available_days: [
+												...selectedDays,
+												...prev.available_days.filter(day => day > 7)]
+										} : null
+									);
+								} else {
+									message.error(`每周最多选择${limit}个日期`);
+								}
+							}}
+						/>
+						<div style={{ marginBottom: '20px', marginTop: '20px' }}>下周可预约日期</div>
+						<Checkbox.Group
+							options={weekDays}
+							value={selectedRecord.available_days.filter(
+								day => day > 7 && day <= 14).map(day => weekDays[day - 8])}
+							onChange={(checkedValues) => {
+								const selectedDays = checkedValues.map(
+									day => weekDays.indexOf(day) + 8
+								);
+								const limit = selectedRecord.name === 'BADMINTON' ? 3 : 2;
+								if (selectedDays.length <= limit) {
+									setSelectedRecord(
+										prev => prev ? {
+											...prev,
+											available_days: [
+												...prev.available_days.filter(
+													day => day <= 7), ...selectedDays]
+										} : null
+									);
+								} else {
+									message.error(`每周最多选择${limit}个日期`);
+								}
+							}}
+						/>
+					</>
 				)}
 			</Modal>
 		</>
