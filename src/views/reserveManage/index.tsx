@@ -1,4 +1,4 @@
-import './reserveManage.css';
+import './reserveManage.less';
 
 import { Button, DatePicker, Descriptions, Layout, message, Modal, Select, Table, Tag } from 'antd';
 import axios from 'axios';
@@ -309,77 +309,76 @@ const ReserveManage = () => {
   };
 
   return (
-    <>
-      <Layout style={{
-        marginTop: 20,
-        borderRadius: '10px',
-        backgroundColor: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '1100px', // 调整整体高度以适应不同的屏幕
-        position: 'relative'
-      }}>
-        <Content style={{
-          padding: '20px',
-          overflow: 'auto', flex: 1, display: 'flex', flexDirection: 'column'
+    <div>
+      <div className='frame'>
+        <Layout style={{
+          marginTop: 20,
+          borderRadius: '10px',
+          backgroundColor: 'white',
+          flexDirection: 'column',
+          position: 'relative',
         }}>
-          <div style={{ marginBottom: '16px' }}>
-            <Button onClick={showDateManageModal}>
-              日期管理
-            </Button>
+          <Content style={{
+            flexDirection: 'column',
+          }}>
+            <div style={{ marginBottom: '16px' }}>
+              <Button onClick={showDateManageModal}>
+                日期管理
+              </Button>
 
-            <Button
-              onClick={() => setIsSettingModalVisible(true)}
-              style={{ marginLeft: '10px', marginRight: '30px' }}>
-              设置预约人数
-            </Button>
+              <Button
+                onClick={() => setIsSettingModalVisible(true)}
+                style={{ marginLeft: '10px', marginRight: '30px' }}>
+                设置预约人数
+              </Button>
 
-            根据日期查询：
-            <DatePicker
-              style={{ marginRight: '15px' }}
-              value={filterDate ? dayjs(filterDate) : null}
-              onChange={(date, dateString) => setFilterDate(dateString as string)} />
+              根据日期查询：
+              <DatePicker
+                style={{ marginRight: '15px' }}
+                value={filterDate ? dayjs(filterDate) : null}
+                onChange={(date, dateString) => setFilterDate(dateString as string)} />
 
-            根据预约状态查询：
-            <Select
-              value={filterStatus}
-              style={{ width: 120, marginRight: '15px' }}
-              onChange={(value) => setFilterStatus(value)}>
-              <Option value="">全部状态</Option>
-              <Option value="1">预约成功</Option>
-              <Option value="2">取消预约</Option>
-            </Select>
+              根据预约状态查询：
+              <Select
+                value={filterStatus}
+                style={{ width: 120, marginRight: '15px' }}
+                onChange={(value) => setFilterStatus(value)}>
+                <Option value="">全部状态</Option>
+                <Option value="1">预约成功</Option>
+                <Option value="2">取消预约</Option>
+              </Select>
 
-            根据运动类型查询：
-            <Select
-              value={filterSportType}
-              style={{ width: 120, marginLeft: '10px', marginRight: '15px' }}
-              onChange={(value) => setFilterSportType(value)}
-            >
-              <Option value="">全部运动</Option>
-              <Option value="BADMINTON">羽毛球</Option>
-              <Option value="BASKETBALL">篮球</Option>
-            </Select>
+              根据运动类型查询：
+              <Select
+                value={filterSportType}
+                style={{ width: 120, marginLeft: '10px', marginRight: '15px' }}
+                onChange={(value) => setFilterSportType(value)}
+              >
+                <Option value="">全部运动</Option>
+                <Option value="BADMINTON">羽毛球</Option>
+                <Option value="BASKETBALL">篮球</Option>
+              </Select>
 
-            <Button onClick={resetFilters} style={{ marginLeft: '10px' }}><RedoOutlined />重置
-            </Button>
-          </div>
-          <div style={{ flex: 1, overflow: 'auto' }}>
-            <Table
-              className='reservationTable'
-              dataSource={reservations}
-              columns={columns}
-              rowKey="id"
-              pagination={{
-                pageSize: 10,
-                hideOnSinglePage: false,
-                showTotal: (total) => `总共 ${total} 条`
-              }}
-
-            />
-          </div>
-        </Content>
-      </Layout>
+              <Button onClick={resetFilters} style={{ marginLeft: '10px' }}><RedoOutlined />重置
+              </Button>
+            </div>
+            <div style={{ flex: 1 }}>
+              <Table
+                className='reservationTable'
+                dataSource={reservations}
+                columns={columns}
+                rowKey="id"
+                pagination={{
+                  className: 'pagination',
+                  pageSize: 10,
+                  hideOnSinglePage: false,
+                  showTotal: (total) => `总共 ${total} 条`
+                }}
+              />
+            </div>
+          </Content>
+        </Layout>
+      </div>
       <Modal
         title="日期管理"
         open={isModalVisible}
@@ -395,7 +394,7 @@ const ReserveManage = () => {
         onOk={(sportType, availablePeoples) => handleOkSetting(sportType, availablePeoples)}
       />
       {renderDetailModal()}
-    </>
+    </div>
   );
 };
 

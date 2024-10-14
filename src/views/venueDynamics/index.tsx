@@ -180,11 +180,10 @@ const VenueDynamics = () => {
 				marginTop: 20,
 				borderRadius: '10px',
 				backgroundColor: 'white',
-				overflow: 'auto',
-				height: '1100px',
-				position: 'relative', // 使Layout相对定位
+				flexDirection: 'column',
+				position: 'relative',
 			}}>
-				<Content style={{ padding: '20px' }}>
+				<Content>
 					<Button
 						onClick={() => showModal()}
 						style={{ marginBottom: '20px', marginRight: '20px' }}
@@ -229,8 +228,7 @@ const VenueDynamics = () => {
 											onClick={() => showdDeleteConfirm(item.id)}>删除</Button>
 									]}
 								>
-									{/* 为卡片内容添加滚动条的容器 */}
-									<div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+									<div style={{ height: '330px', overflowY: 'auto' }}>
 										<p>{item.content}</p>
 										{item.image && (
 											<img
@@ -248,9 +246,10 @@ const VenueDynamics = () => {
 						)}
 					/>
 					<div style={{
-						position: 'absolute',
-						right: 20, // 根据实际需要调整
-						bottom: 20, // 根据实际需要调整
+						display: 'flex',
+						justifyContent: 'flex-end',
+						alignItems: 'flex-end',
+						marginTop: 'auto',
 					}}>
 						<Pagination
 							current={currentPage}
