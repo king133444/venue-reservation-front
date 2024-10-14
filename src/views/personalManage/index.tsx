@@ -1,12 +1,13 @@
+import './index.less';
+
 import { DeleteOutlined, EditOutlined, UploadOutlined } from '@ant-design/icons';
 import { RedoOutlined } from '@ant-design/icons';
 import {
 	Button, Form, Input, Layout, message,
-	Modal, Pagination, Space, Switch, Table, Upload
+	Modal, Space, Switch, Table, Upload
 } from 'antd';
 import { Content } from 'antd/es/layout/layout';
 import axios from 'axios';
-import type { SetStateAction } from 'react';
 import { useEffect, useState } from 'react';
 
 import api from '@/api';
@@ -27,22 +28,17 @@ const UserManagement = () => {
 		occupation?: string;
 		is_electrical_employee?: number;
 	} | null>(null);
-	const [currentPage, setCurrentPage] = useState(1);
-	const pageSize = 10; // 假设每页显示10条数据
-	const total = data.length; // 总数据量
 	const [originalData, setOriginalData] = useState([]); // 添加一个状态来保存原始数据
 	const [searchName, setSearchName] = useState('');
+	const [currentPage, setCurrentPage] = useState(1);
+	const rowHeight = 90;
+	const totalPages = Math.ceil(data.length / 10);
+	const isLastPage = currentPage === totalPages;
+	const dataOnLastPage = data.length % 10 || 10; // 最后一页的数据条数
+	const actualDataCount = isLastPage ? dataOnLastPage : 10;
 
-	// 根据当前页和每页大小计算当前页的数据
-	const currentData = data.slice(
-		(currentPage - 1) * pageSize,
-		currentPage * pageSize
-	);
-
-	// 分页改变时的处理函数
-	const handlePageChange = (page: SetStateAction<number>) => {
-		setCurrentPage(page);
-	};
+	// 计算需要补充的高度
+	const fillHeight = isLastPage ? (10 - actualDataCount) * rowHeight : 0;
 
 	useEffect(() => {
 		fetchData();
@@ -119,6 +115,10 @@ const UserManagement = () => {
 	const handleDelete = async (record: { id: number }) => {
 		try {
 			const response: any = await api.DeleteUser({ id: record.id });
+			if (!response.success) {
+				message.error(response.message);
+				return;
+			}
 			message.success(response.message);
 			fetchData();
 		} catch (error) {
@@ -231,10 +231,8 @@ const UserManagement = () => {
 		{
 			title: '序号',
 			key: 'index',
-			render: (text: any, record: any, index: number) => {
-				const pageIndex = (currentPage - 1) * 10 + index + 1;
-				return `${pageIndex}`;
-			}
+			render: (_: undefined, __: any, index: number) =>
+				1 + index,
 		},
 		{ title: '姓名', dataIndex: 'name', key: 'name' },
 		{ title: '身份证号', dataIndex: 'id_number', key: 'idNumber' },
@@ -286,15 +284,14 @@ const UserManagement = () => {
 		<>
 			<Layout
 				style={{
+					marginTop: 20,
 					borderRadius: '10px',
 					backgroundColor: 'white',
-					overflow: 'auto',
-					height: '1100px',
-					marginTop: 20,
-					position: 'relative'
+					flexDirection: 'column',
+					position: 'relative',
 				}}
 			>
-				<Content style={{ padding: '20px' }}>
+				<Content style={{ position: 'relative' }}>
 					<div style={{ display: 'flex', justifyContent: 'space-between' }}>
 						<Space wrap size={'middle'}>
 							<Button onClick={openAddModal}>新增用户</Button>
@@ -312,27 +309,35 @@ const UserManagement = () => {
 						</Space>
 					</div>
 					<br />
-					<div style={{ minHeight: '500px' }}> {/* 设置一个合适的最小高度 */}
+					<div>
 						<Table
-							dataSource={currentData} // 使用分片后的数据
+							className='personalTable'
+							dataSource={data}
 							columns={columns}
 							loading={loading}
-							pagination={false} // 禁用内置分页
 							rowKey="id"
+							style={{
+								display: 'flex',
+								flexDirection: 'column',
+								flexGrow: 1,
+								overflow: 'hidden'
+							}}
+							pagination={{
+								className: 'pagination',
+								pageSize: 10,
+								hideOnSinglePage: false,
+								onChange: (page) => {
+									setCurrentPage(page);
+								},
+								showTotal: (total) => `总共 ${total} 条`
+							}}
+							footer={() => (
+								<div style={{ height: fillHeight + 'px' }}></div>
+							)}
 						/>
 					</div>
 					<div style={{
-						position: 'absolute',
-						right: 20, // 根据实际需要调整
-						bottom: 20, // 根据实际需要调整
 					}}>
-						<Pagination
-							current={currentPage}
-							pageSize={pageSize}
-							total={total}
-							onChange={handlePageChange}
-							showTotal={(total) => `总共 ${total} 条`} // 显示总数
-						/>
 					</div>
 				</Content>
 			</Layout>

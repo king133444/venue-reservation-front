@@ -29,13 +29,11 @@ const Home: React.FC = () => {
 
 	return (
 		<>
-			{/* <RefreshToken /> */}
 			<Layout>
 				<Sider
 					theme="light"
 					trigger={null}
 					collapsible
-				// style={{ background: colorBgContainer }}
 				>
 					<div
 						className="logo-container"
@@ -54,7 +52,6 @@ const Home: React.FC = () => {
 							navigate(getRoutes(key));
 						}}
 						selectedKeys={[selectKey]}
-						// defaultSelectedKeys={['menu5']}
 						items={items}
 					/>
 				</Sider>
