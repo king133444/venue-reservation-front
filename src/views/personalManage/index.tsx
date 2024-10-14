@@ -30,6 +30,15 @@ const UserManagement = () => {
 	} | null>(null);
 	const [originalData, setOriginalData] = useState([]); // 添加一个状态来保存原始数据
 	const [searchName, setSearchName] = useState('');
+	const [currentPage, setCurrentPage] = useState(1);
+	const rowHeight = 90;
+	const totalPages = Math.ceil(data.length / 10);
+	const isLastPage = currentPage === totalPages;
+	const dataOnLastPage = data.length % 10 || 10; // 最后一页的数据条数
+	const actualDataCount = isLastPage ? dataOnLastPage : 10;
+
+	// 计算需要补充的高度
+	const fillHeight = isLastPage ? (10 - actualDataCount) * rowHeight : 0;
 
 	useEffect(() => {
 		fetchData();
@@ -106,6 +115,10 @@ const UserManagement = () => {
 	const handleDelete = async (record: { id: number }) => {
 		try {
 			const response: any = await api.DeleteUser({ id: record.id });
+			if (!response.success) {
+				message.error(response.message);
+				return;
+			}
 			message.success(response.message);
 			fetchData();
 		} catch (error) {
@@ -278,7 +291,7 @@ const UserManagement = () => {
 					position: 'relative',
 				}}
 			>
-				<Content>
+				<Content style={{ position: 'relative' }}>
 					<div style={{ display: 'flex', justifyContent: 'space-between' }}>
 						<Space wrap size={'middle'}>
 							<Button onClick={openAddModal}>新增用户</Button>
@@ -303,12 +316,24 @@ const UserManagement = () => {
 							columns={columns}
 							loading={loading}
 							rowKey="id"
+							style={{
+								display: 'flex',
+								flexDirection: 'column',
+								flexGrow: 1,
+								overflow: 'hidden'
+							}}
 							pagination={{
 								className: 'pagination',
 								pageSize: 10,
 								hideOnSinglePage: false,
+								onChange: (page) => {
+									setCurrentPage(page);
+								},
 								showTotal: (total) => `总共 ${total} 条`
 							}}
+							footer={() => (
+								<div style={{ height: fillHeight + 'px' }}></div>
+							)}
 						/>
 					</div>
 					<div style={{

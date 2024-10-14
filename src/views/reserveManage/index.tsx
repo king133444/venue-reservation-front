@@ -23,7 +23,15 @@ const ReserveManage = () => {
   const [filterDate, setFilterDate] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterSportType, setFilterSportType] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowHeight = 90;
+  const totalPages = Math.ceil(reservations.length / 10);
+  const isLastPage = currentPage === totalPages;
+  const dataOnLastPage = reservations.length % 10 || 10; // 最后一页的数据条数
+  const actualDataCount = isLastPage ? dataOnLastPage : 10;
 
+  // 计算需要补充的高度
+  const fillHeight = isLastPage ? (10 - actualDataCount) * rowHeight : 0;
   // 处理设置预约人数的逻辑
   const handleOkSetting = async (sportType: string, availablePeoples: number) => {
     try {
@@ -362,18 +370,30 @@ const ReserveManage = () => {
               <Button onClick={resetFilters} style={{ marginLeft: '10px' }}><RedoOutlined />重置
               </Button>
             </div>
-            <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', minHeight: '80vh' }}>
               <Table
                 className='reservationTable'
                 dataSource={reservations}
                 columns={columns}
                 rowKey="id"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  flexGrow: 1,
+                  overflow: 'hidden'
+                }}
                 pagination={{
                   className: 'pagination',
                   pageSize: 10,
                   hideOnSinglePage: false,
+                  onChange: (page) => {
+                    setCurrentPage(page);
+                  },
                   showTotal: (total) => `总共 ${total} 条`
                 }}
+                footer={() => (
+                  <div style={{ height: fillHeight + 'px' }}></div>
+                )}
               />
             </div>
           </Content>
