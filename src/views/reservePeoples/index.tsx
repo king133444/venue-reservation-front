@@ -13,7 +13,6 @@ const SetReservationModal: React.FC<Props> = ({ isVisible, onCancel, onOk }) => 
 
     const handleOk = () => {
         onOk(selectedSportType, availablePeoples);
-        // 可以在这里清除状态，或者留给父组件在处理完毕后清除
         setSelectedSportType('');
         setAvailablePeoples(1);
     };
