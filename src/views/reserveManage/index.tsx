@@ -54,6 +54,22 @@ const ReserveManage = () => {
       // 可以在这里处理错误，例如显示一个错误消息
     }
   };
+  const convertDurationToTimeRange = (duration: any) => {
+    const durationStr = duration.toString();
+    const isShortFormat = durationStr.length === 7;
+
+    const startHour = parseInt(durationStr.slice(0, isShortFormat ? 1 : 2), 10);
+    const startMinute = parseInt(durationStr
+      .slice(isShortFormat ? 1 : 2, isShortFormat ? 3 : 4), 10);
+    const endHour = parseInt(durationStr.slice(isShortFormat ? 3 : 4, isShortFormat ? 5 : 6), 10);
+    const endMinute = parseInt(durationStr.slice(isShortFormat ? 5 : 6), 10);
+
+    const formatTime = (hour: any, minute: any) => {
+      return dayjs().hour(hour).minute(minute).format('HH:mm');
+    };
+
+    return `${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}`;
+  };
 
   // 连接前后端将预约信息显示在表格里
   const fetchReservations = useCallback(async () => {
@@ -69,9 +85,15 @@ const ReserveManage = () => {
         params.append('sportType', filterSportType);
       }
       const response = await axios.get(`http://127.0.0.1:8001/reservation?${params.toString()}`);
+      console.log(response.data[0].duration);
+
       if (response.status === 200) {
         // 过滤掉状态为3的预约记录
-        const filteredData = response.data.filter((item: { status: number; }) => item.status !== 3);
+        const filteredData = response.data.filter((item: { status: number; }) => item.status !== 3)
+          .map((item: any) => ({
+            ...item,
+            duration: convertDurationToTimeRange(item.duration),
+          }));;
         console.log('fil', filteredData);
 
         setReservations(filteredData);
