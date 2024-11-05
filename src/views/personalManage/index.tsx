@@ -17,8 +17,8 @@ const UserManagement = () => {
 	const [loading, setLoading] = useState(false);
 	const [showAddModal, setShowAddModal] = useState(false);
 	const [showEditModal, setShowEditModal] = useState(false);
-	const [imagePreview, setImagePreview] = useState(''); // 用于显示图片预览
-	const [, setImageBase64] = useState(''); // 用于存储处理后的Base64编码
+	const [imagePreview, setImagePreview] = useState('');
+	const [, setImageBase64] = useState('');
 	const [selectedUser, setSelectedUser] = useState<{
 		id?: number;
 		name?: string;
@@ -28,13 +28,13 @@ const UserManagement = () => {
 		occupation?: string;
 		is_electrical_employee?: number;
 	} | null>(null);
-	const [originalData, setOriginalData] = useState([]); // 添加一个状态来保存原始数据
+	const [originalData, setOriginalData] = useState([]);
 	const [searchName, setSearchName] = useState('');
 	const [currentPage, setCurrentPage] = useState(1);
 	const rowHeight = 90;
 	const totalPages = Math.ceil(data.length / 10);
 	const isLastPage = currentPage === totalPages;
-	const dataOnLastPage = data.length % 10 || 10; // 最后一页的数据条数
+	const dataOnLastPage = data.length % 10 || 10;
 	const actualDataCount = isLastPage ? dataOnLastPage : 10;
 
 	// 计算需要补充的高度
@@ -130,16 +130,14 @@ const UserManagement = () => {
 		const reader = new FileReader();
 		reader.onload = () => {
 			if (typeof reader.result === 'string') {
-				setImagePreview(reader.result); // 设置预览图片
-				const base64Data = reader.result.split(',')[1]; // 移除"data:image/jpeg;base64,"前缀
-				// 更新状态，存储处理后的Base64编码
+				setImagePreview(reader.result);
+				const base64Data = reader.result.split(',')[1];
 				setImageBase64(base64Data);
-				// 更新表单中的image字段
 				form.setFieldsValue({ image: base64Data });
 			}
 		};
 		reader.readAsDataURL(file);
-		return false; // 阻止默认上传行为
+		return false;
 	};
 
 	const handleAddSubmit = async (values: any) => {
@@ -150,7 +148,6 @@ const UserManagement = () => {
 			};
 			const response: any = await api.CreateUser(adjustedValues);
 
-			// 检查后端响应的success字段
 			if (!response.data.success) {
 				message.error(response.data.message);
 			} else {
@@ -196,15 +193,10 @@ const UserManagement = () => {
 		}
 	};
 
-	// 点击新增用户按钮时调用
 	const openAddModal = () => {
-		// 重置表单字段
 		form.resetFields();
-		// 清除图片预览
 		setImagePreview('');
-		// 清除Base64图片数据
 		setImageBase64('');
-		// 显示新增用户模态框
 		setShowAddModal(true);
 	};
 
@@ -272,12 +264,12 @@ const UserManagement = () => {
 			handleUpload(file);
 			return false;
 		},
-		showUploadList: false // 不显示文件列表
+		showUploadList: false
 	};
 
 	const handleReset = () => {
-		setSearchName(''); // 清空搜索框
-		fetchData(); // 重新获取并显示所有用户数据
+		setSearchName('');
+		fetchData();
 	};
 
 	return (
@@ -445,7 +437,7 @@ const UserManagement = () => {
 									showUploadList={false}
 									beforeUpload={file => {
 										handleBeforeUpload(file);
-										return false; // 阻止自动上传
+										return false;
 									}}
 									accept="image/*"
 								>

@@ -27,33 +27,30 @@ const ReserveManage = () => {
   const rowHeight = 90;
   const totalPages = Math.ceil(reservations.length / 10);
   const isLastPage = currentPage === totalPages;
-  const dataOnLastPage = reservations.length % 10 || 10; // 最后一页的数据条数
+  const dataOnLastPage = reservations.length % 10 || 10;
   const actualDataCount = isLastPage ? dataOnLastPage : 10;
-
-  // 计算需要补充的高度
   const fillHeight = isLastPage ? (10 - actualDataCount) * rowHeight : 0;
+
   // 处理设置预约人数的逻辑
   const handleOkSetting = async (sportType: string, availablePeoples: number) => {
     try {
-      // 发送POST请求到后端API，确保URL与您的NestJS服务匹配
       const response = await axios.post(
         'http://127.0.0.1:8001/ReservationPeoples/updateReservationPeoples', {
-        name: sportType, // 注意：这里的字段名需要与后端DTO一致
+        name: sportType,
         available_peoples: availablePeoples,
       });
       if (response.status === 200) {
         message.success('设置预约人数成功');
-        setIsSettingModalVisible(false); // 关闭模态框
-        // 可选：重新获取预约信息
+        setIsSettingModalVisible(false);
         fetchReservations();
       } else {
-        console.error('设置预约人数失败:', response);
+        message.error('设置预约人数失败');
       }
     } catch (error) {
-      console.error('请求错误:', error);
-      // 可以在这里处理错误，例如显示一个错误消息
+      message.error('设置预约人数失败，请稍后再试');
     }
   };
+
   const convertDurationToTimeRange = (duration: any) => {
     const durationStr = duration.toString();
     const isShortFormat = durationStr.length === 7;
@@ -67,7 +64,6 @@ const ReserveManage = () => {
     const formatTime = (hour: any, minute: any) => {
       return dayjs().hour(hour).minute(minute).format('HH:mm');
     };
-
     return `${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}`;
   };
 
@@ -85,30 +81,25 @@ const ReserveManage = () => {
         params.append('sportType', filterSportType);
       }
       const response = await axios.get(`http://127.0.0.1:8001/reservation?${params.toString()}`);
-      console.log(response.data[0].duration);
-
       if (response.status === 200) {
-        // 过滤掉状态为3的预约记录
         const filteredData = response.data.filter((item: { status: number; }) => item.status !== 3)
           .map((item: any) => ({
             ...item,
             duration: convertDurationToTimeRange(item.duration),
           }));;
-        console.log('fil', filteredData);
-
         setReservations(filteredData);
+        setCurrentPage(1);
       } else {
-        console.error('Failed to fetch reservations:', response);
+        message.error('获取预约信息失败');
       }
     } catch (error) {
-      console.error('Error fetching reservations:', error);
+      message.error('获取预约信息失败，请稍后再试');
     }
   }, [filterDate, filterStatus, filterSportType]);
 
-  // 监听这个函数
   useEffect(() => {
     fetchReservations();
-  }, [fetchReservations]); // 这样就不会有ESLint警告了
+  }, [fetchReservations]);
 
   const showDateManageModal = () => {
     setIsModalVisible(true);
@@ -134,31 +125,27 @@ const ReserveManage = () => {
     try {
       const response = await axios.get(`http://127.0.0.1:8001/users/getUser/${selectedUserId}`);
       if (response.status === 200) {
-        console.log('User details:', response.data.data);
         return response.data.data;
       } else {
-        console.error('Failed to fetch user details:', response);
         return null;
       }
     } catch (error) {
-      console.error('Error fetching user details:', error);
       return null;
     }
   };
 
   // 连接前后端中取消预约按钮
-  const cancelReservation = async (reservationId: number) => {
+  const cancelReservationForAdmin = async (reservationId: number) => {
     try {
-      const response = await axios.post(`http://127.0.0.1:8001/reservation/cancelReservation/${reservationId}`);
-      if (response.status === 201) {
-        console.log('111');
+      const response = await axios.post(`http://127.0.0.1:8001/reservation/cancelReservationForAdmin/${reservationId}`);
+      if (response.data.success) {
         message.success('取消预约成功');
         fetchReservations();
       } else {
-        console.error('取消预约失败:', response);
+        message.error('取消预约失败');
       }
     } catch (error) {
-      console.error('请求错误:', error);
+      message.error('取消预约失败，请检查网络或联系管理员');
     }
   };
 
@@ -170,10 +157,10 @@ const ReserveManage = () => {
         message.success('删除预约成功');
         fetchReservations();
       } else {
-        console.error('删除预约失败:', response);
+        message.error('删除预约失败');
       }
-    } catch (error) {
-      console.error('请求错误:', error);
+    } catch (error: any) {
+      message.error(`请求错误: ${error.response?.data?.message || '未知错误，请稍后再试'}`);
     }
   };
 
@@ -185,10 +172,7 @@ const ReserveManage = () => {
       okType: 'danger',
       cancelText: '取消',
       onOk() {
-        cancelReservation(reservationId);
-      },
-      onCancel() {
-        console.log('取消预约');
+        cancelReservationForAdmin(reservationId);
       },
     });
   };
@@ -203,31 +187,23 @@ const ReserveManage = () => {
       onOk() {
         deleteReservation(reservationId);
       },
-      onCancel() {
-        console.log('取消删除');
-      },
     });
   };
 
   const resetFilters = () => {
-    // 重置筛选条件
     setFilterDate('');
     setFilterStatus('');
     setFilterSportType('');
-
-    // 可能需要重新加载数据，这里假设你有一个加载数据的函数
     fetchReservations();
   };
 
-  // 使用useEffect来控制fetchUserDetails调用，仅在detailModalVisible为true时请求
   useEffect(() => {
     if (detailModalVisible) {
       fetchUserDetails(selectedUserId).then((data) => {
         setuserDetails(data);
       });
     }
-  }, [detailModalVisible, selectedUserId]); // 添加selectedUserId作为依赖，以便在id改变时重新获取数据// 确保依赖项拼写正确
-  // Columns for table
+  }, [detailModalVisible, selectedUserId]);
   const columns = [
     {
       title: '序号',
@@ -259,7 +235,7 @@ const ReserveManage = () => {
       sorter: (a: any, b: any) => dayjs(a.time).unix() - dayjs(b.time).unix(),
     },
     {
-      title: '预约时长（小时）',
+      title: '预约时间段',
       dataIndex: 'duration',
       key: 'duration'
     },
@@ -405,6 +381,7 @@ const ReserveManage = () => {
                   overflow: 'hidden'
                 }}
                 pagination={{
+                  current: currentPage,
                   className: 'pagination',
                   pageSize: 10,
                   hideOnSinglePage: false,

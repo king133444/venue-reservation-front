@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import api from '@/api'; // 确保这里的路径正确指向您的API函数
+import api from '@/api';
 
 const { Content } = Layout;
 
@@ -29,8 +29,8 @@ const VenueDynamics = () => {
    const [imagePreview, setImagePreview] = useState('');
    const [form] = Form.useForm();
    const [currentPage, setCurrentPage] = useState(1);
-   const pageSize = 8; // 假设每页显示8条数据
-   const total = dynamics.length; // 总数据量
+   const pageSize = 8;
+   const total = dynamics.length;
    const [filterDate, setFilterDate] = useState<string | null>(null);
    // 获取当前页的数据
    const currentData = dynamics.slice(
@@ -55,15 +55,18 @@ const VenueDynamics = () => {
          const response: any = await api.GetPosts(params);
          const dynamics = response.data as Dynamic[];
          setDynamics(dynamics);
+         if (currentPage > 1 && dynamics.length <= (currentPage - 1) * pageSize) {
+            setCurrentPage(1);
+         }
       } catch (error) {
          message.error('获取场馆动态失败');
       }
       setLoading(false);
-   }, [filterDate]); // 依赖于 filterDate
+   }, [currentPage, filterDate]);
 
    useEffect(() => {
       fetchDynamics();
-   }, [fetchDynamics]); // fetchDynamics 现在是一个依赖
+   }, [fetchDynamics]);
 
    const showModal = (dynamic: Dynamic | null = null) => {
       setIsEditMode(dynamic !== null);
@@ -73,7 +76,7 @@ const VenueDynamics = () => {
          form.setFieldsValue({
             ...dynamic,
             publish_date: moment(dynamic.publish_date),
-            image: undefined // 清除图片字段
+            image: undefined
          });
          setImagePreview(dynamic.image ? `data:image/png;base64,${dynamic.image}` : '');
       } else {
@@ -148,8 +151,7 @@ const VenueDynamics = () => {
       const reader = new FileReader();
       reader.onload = () => {
          if (typeof reader.result === 'string') {
-            setImagePreview(reader.result); // 设置预览图片，这里保留前缀，因为预览需要
-
+            setImagePreview(reader.result);
             // 移除"data:image/jpeg;base64,"前缀，只存储纯Base64编码到数据库
             const base64Data = reader.result.split(',')[1];
             form.setFieldsValue({ image: base64Data });
@@ -162,10 +164,8 @@ const VenueDynamics = () => {
    const handleVisibilityChange = async (id: number, isVisible: boolean) => {
       setLoading(true);
       try {
-         // 替换为您的API调用
          await api.UpdatePost({ id, isVisible });
          message.success('帖子状态更新成功');
-         // 更新本地状态以反映更改
          setDynamics(dynamics.map(
             dynamic => dynamic.id === id ? { ...dynamic, isVisible } : dynamic));
       } catch (error) {
@@ -249,8 +249,8 @@ const VenueDynamics = () => {
                   <div style={{
                      display: 'flex',
                      justifyContent: 'space-between',
-                     alignItems: 'center', // 根据需要调整对齐方式
-                     marginTop: '20px', // 为分页器上方提供一些空间
+                     alignItems: 'center',
+                     marginTop: '20px',
                   }}>
                      <div style={{ width: '80%' }}></div>
                      <Pagination
@@ -258,7 +258,7 @@ const VenueDynamics = () => {
                         pageSize={pageSize}
                         total={total}
                         onChange={handlePageChange}
-                        showTotal={(total) => `总共 ${total} 条`} // 显示总数
+                        showTotal={(total) => `总共 ${total} 条`}
                      />
                   </div>
                </div>
