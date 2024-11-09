@@ -171,7 +171,8 @@ const UserManagement = () => {
 			const adjustedValues = {
 				...values,
 				id: selectedUser?.id,
-				is_electrical_employee: values.is_electrical_employee ? 1 : 0
+				is_electrical_employee: values.is_electrical_employee ? 1 : 0,
+				status: values.status ? true : false
 			};
 			const response: any = await api.UpdateUser(adjustedValues);
 			message.success(response.message);
@@ -205,6 +206,7 @@ const UserManagement = () => {
 			...record,
 			idNumber: record.id_number,
 			is_electrical_employee: record.is_electrical_employee === 1,
+			status: record.status === true,
 			image: record.image
 		});
 
@@ -241,6 +243,12 @@ const UserManagement = () => {
 			}
 		},
 		{ title: '职位', dataIndex: 'occupation', key: 'occupation' },
+		{
+			title: '状态',
+			dataIndex: 'status',
+			key: 'status',
+			render: (text: boolean) => (text ? '正常' : '请假'),
+		},
 		{
 			title: '操作',
 			key: 'action',
@@ -383,6 +391,14 @@ const UserManagement = () => {
 					>
 						<Switch />
 					</Form.Item>
+					<Form.Item
+						label="是否请假"
+						name="status"
+						valuePropName="checked"
+						rules={[{ required: true, message: '请选择状态' }]}
+					>
+						<Switch />
+					</Form.Item>
 					<Button type="primary" htmlType="submit">
 						新增用户
 					</Button>
@@ -468,6 +484,14 @@ const UserManagement = () => {
 							name="is_electrical_employee"
 							valuePropName="checked"
 							rules={[{ required: true, message: '请选择是否为电力员工' }]}
+						>
+							<Switch />
+						</Form.Item>
+						<Form.Item
+							label="是否请假"
+							name="status"
+							valuePropName="checked"
+							rules={[{ required: true, message: '请选择状态' }]}
 						>
 							<Switch />
 						</Form.Item>
