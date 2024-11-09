@@ -1,6 +1,9 @@
 import './reserveManage.less';
 
-import { Button, DatePicker, Descriptions, Layout, message, Modal, Select, Table, Tag } from 'antd';
+import {
+  Button, Calendar, DatePicker, Descriptions,
+  Layout, message, Modal, Select, Table, Tag
+} from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';
 // import type { SetStateAction } from 'react';
@@ -30,6 +33,10 @@ const ReserveManage = () => {
   const dataOnLastPage = reservations.length % 10 || 10;
   const actualDataCount = isLastPage ? dataOnLastPage : 10;
   const fillHeight = isLastPage ? (10 - actualDataCount) * rowHeight : 0;
+  const [isCalendarModalVisible, setIsCalendarModalVisible] = useState(false);
+  const [selectedDateReservations, setSelectedDateReservations] = useState([]);
+  const [selectedDateCount, setSelectedDateCount] = useState(0);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
 
   // 处理设置预约人数的逻辑
   const handleOkSetting = async (sportType: string, availablePeoples: number) => {
@@ -190,6 +197,61 @@ const ReserveManage = () => {
     });
   };
 
+  // 日历统计
+  const renderCalendarModal = () => {
+    return (
+      <Modal
+        title="日历统计"
+        open={isCalendarModalVisible}
+        onCancel={() => setIsCalendarModalVisible(false)}
+        footer={null}
+      >
+        <Calendar
+          onSelect={async (date, info) => {
+            if (info.source === 'date') {
+              const dateString = date.format('YYYY-MM-DD');
+              try {
+                const response = await axios.get(`http://127.0.0.1:8001/reservation/byDate?date=${dateString}`);
+                if (response.status === 200 && response.data) {
+                  setSelectedDateReservations(response.data.data.timeSlots);
+                  setSelectedDateCount(response.data.data.totalCount);
+                  setIsDetailModalVisible(true);
+                }
+              } catch (error) {
+                message.error('获取预约信息失败，请稍后再试');
+              }
+            }
+          }}
+        />
+      </Modal>
+    );
+  };
+
+  // 日历统计中某一天的预约结果信息
+  const renderDateDetailModal = () => {
+    return (
+      <Modal
+        title={`预约总人数：${selectedDateCount} 人`}
+        open={isDetailModalVisible}
+        onCancel={() => setIsDetailModalVisible(false)}
+        footer={null}
+      >
+        <Table
+          dataSource={selectedDateReservations}
+          columns={[
+            {
+              title: '预约时间段',
+              dataIndex: 'duration',
+              key: 'duration',
+            },
+            { title: '预约人数', dataIndex: 'count', key: 'count' },
+          ]}
+          rowKey="id"
+        />
+      </Modal>
+    );
+  };
+
   const resetFilters = () => {
     setFilterDate('');
     setFilterStatus('');
@@ -248,7 +310,19 @@ const ReserveManage = () => {
       ),
     },
     {
-      title: '预约状态',
+      title: (
+        <>
+          预约状态
+          <Button
+            size="small"
+            style={{ marginLeft: 8 }}
+            onClick={() => setIsCalendarModalVisible(true)}
+          >
+            日历统计
+          </Button>
+
+        </>
+      ),
       dataIndex: 'status',
       key: 'status',
       render: (text: number) => {
@@ -413,6 +487,8 @@ const ReserveManage = () => {
         onOk={(sportType, availablePeoples) => handleOkSetting(sportType, availablePeoples)}
       />
       {renderDetailModal()}
+      {renderCalendarModal()}
+      {renderDateDetailModal()}
     </div>
   );
 };
