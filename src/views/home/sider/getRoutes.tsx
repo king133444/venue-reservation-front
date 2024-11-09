@@ -7,6 +7,8 @@ export const getRoutes = (key: string) => {
 			return '/home/venueDynamics';
 		case 'menu3':
 			return '/home/personalManage';
+		case 'menu5':
+			return '/home/disclaimers';
 		case 'menu4':
 			return '/login';
 		default:
@@ -24,6 +26,8 @@ export const getMenuKeys = (route: string) => {
 			return 'menu2';
 		case '/home/personalManage':
 			return 'menu3';
+		case '/home/disclaimers':
+			return 'menu5';
 		case '/login':
 			return 'menu4';
 		default:
