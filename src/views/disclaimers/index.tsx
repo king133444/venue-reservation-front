@@ -26,6 +26,7 @@ const DisclaimerForm: React.FC = () => {
             <Form.Item
                 name="content"
                 label="免责声明内容"
+
                 rules={[{ required: true, message: '请输入免责声明内容' }]}
             >
                 <Input.TextArea rows={4} />
