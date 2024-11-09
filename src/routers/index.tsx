@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, useRoutes } from 'react-router-dom';
 
+import DisclaimerForm from '@/views/disclaimers';
 import HomePage from '@/views/home/index';
 import Login from '@/views/login/index';
 import PersonalManage from '@/views/personalManage';
@@ -81,6 +82,18 @@ export const rootRouter: RouteConfig = [
 				meta: {
 					title: '人员管理',
 					key: 'personalManage'
+				}
+			},
+			{
+				path: 'disclaimers',
+				element: (
+					<AuthRoute>
+						<DisclaimerForm />
+					</AuthRoute>
+				),
+				meta: {
+					title: '免责设置',
+					key: 'disclaimers'
 				}
 			}
 

@@ -28,6 +28,7 @@ export default function getItems() {
 		getItem('场馆动态', 'menu2', <ProjectOutlined rev={undefined} />),
 		getItem('预约管理', 'menu1', <HomeOutlined rev={undefined} />),
 		getItem('人员管理', 'menu3', <SmileOutlined rev={undefined} />),
+		getItem('免责设置', 'menu5', <SmileOutlined rev={undefined} />),
 		getItem('退出', 'menu4', <LogoutOutlined rev={undefined} />)
 	];
 
