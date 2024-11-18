@@ -1,10 +1,13 @@
+import 'dayjs/locale/zh-cn';
+
 import { UploadOutlined } from '@ant-design/icons';
+dayjs.locale('zh-cn');
 import {
-   Button, Card, DatePicker, Form, Input,
+   Button, Card, ConfigProvider, DatePicker, Form, Input,
    Layout, List, message, Modal, Pagination, Switch, Upload
 } from 'antd';
+import locale from 'antd/locale/zh_CN';
 import dayjs from 'dayjs';
-import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import api from '@/api';
@@ -75,7 +78,7 @@ const VenueDynamics = () => {
       if (dynamic) {
          form.setFieldsValue({
             ...dynamic,
-            publish_date: moment(dynamic.publish_date),
+            publish_date: dayjs(dynamic.publish_date),
             image: undefined
          });
          setImagePreview(dynamic.image ? `data:image/png;base64,${dynamic.image}` : '');
@@ -110,6 +113,7 @@ const VenueDynamics = () => {
       }
       try {
          const values = await form.validateFields();
+
          const formattedValues = {
             ...values,
             publish_date: values.publish_date,
@@ -176,135 +180,137 @@ const VenueDynamics = () => {
 
    return (
       <>
-         <Layout style={{
-            marginTop: 20,
-            borderRadius: '10px',
-            backgroundColor: 'white',
-            flexDirection: 'column',
-            position: 'relative',
-         }}>
-            <Content>
-               <Button
-                  onClick={() => showModal()}
-                  style={{ marginBottom: '20px', marginRight: '20px' }}
-               >
-                  新增动态
-               </Button>
-               根据日期查询：
-               <DatePicker
-                  style={{ marginRight: '15px' }}
-                  value={filterDate ? dayjs(filterDate) : null}
-                  onChange={
-                     (
-                        date,
-                        dateString
-                     ) => setFilterDate(date ? (dateString as string) : null)
-                  }
-               />
-               <div>
-                  <List
-                     style={{ minHeight: '78vh' }}
-                     loading={loading}
-                     grid={{ gutter: 16, column: 4 }}
-                     dataSource={currentData}
-                     renderItem={(item, index) => (
-                        <List.Item>
-                           <Card
-                              title={`${index + 1}. ${item.title}`}
-                              extra={
-                                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <Switch
-                                       checkedChildren="可见"
-                                       unCheckedChildren="隐藏"
-                                       checked={item.isVisible}
-                                       onChange={checked =>
-                                          handleVisibilityChange(item.id, checked)}
-                                       style={{ marginRight: 8 }}
-                                    />
-                                    <Button onClick={() => showModal(item)}>编辑</Button>
-                                 </div>
-                              }
-                              actions={[
-                                 <Button key="delete"
-                                    onClick={() => showdDeleteConfirm(item.id)}>删除</Button>
-                              ]}
-                           >
-                              <div style={{ height: '330px', overflowY: 'auto' }}>
-                                 <p>{item.content}</p>
-                                 {item.image && (
-                                    <img
-                                       src={`data:image/png;base64,${item.image}`}
-                                       alt="dynamic"
-                                       style={{ maxWidth: '100%', maxHeight: '100px' }}
-                                    />
-                                 )}
-                                 <p>
-                                    {moment(item.publish_date).format('YYYY-MM-DD HH:mm')}
-                                 </p>
-                              </div>
-                           </Card>
-                        </List.Item>
-                     )}
+         <ConfigProvider locale={locale}>
+            <Layout style={{
+               marginTop: 20,
+               borderRadius: '10px',
+               backgroundColor: 'white',
+               flexDirection: 'column',
+               position: 'relative',
+            }}>
+               <Content>
+                  <Button
+                     onClick={() => showModal()}
+                     style={{ marginBottom: '20px', marginRight: '20px' }}
+                  >
+                     新增动态
+                  </Button>
+                  根据日期查询：
+                  <DatePicker
+                     style={{ marginRight: '15px' }}
+                     value={filterDate ? dayjs(filterDate) : null}
+                     onChange={
+                        (
+                           date,
+                           dateString
+                        ) => setFilterDate(date ? (dateString as string) : null)
+                     }
                   />
-                  <div style={{
-                     display: 'flex',
-                     justifyContent: 'space-between',
-                     alignItems: 'center',
-                     marginTop: '20px',
-                  }}>
-                     <div style={{ width: '80%' }}></div>
-                     <Pagination
-                        current={currentPage}
-                        pageSize={pageSize}
-                        total={total}
-                        onChange={handlePageChange}
-                        showTotal={(total) => `总共 ${total} 条`}
+                  <div>
+                     <List
+                        style={{ minHeight: '78vh' }}
+                        loading={loading}
+                        grid={{ gutter: 16, column: 4 }}
+                        dataSource={currentData}
+                        renderItem={(item, index) => (
+                           <List.Item>
+                              <Card
+                                 title={`${index + 1}. ${item.title}`}
+                                 extra={
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                       <Switch
+                                          checkedChildren="可见"
+                                          unCheckedChildren="隐藏"
+                                          checked={item.isVisible}
+                                          onChange={checked =>
+                                             handleVisibilityChange(item.id, checked)}
+                                          style={{ marginRight: 8 }}
+                                       />
+                                       <Button onClick={() => showModal(item)}>编辑</Button>
+                                    </div>
+                                 }
+                                 actions={[
+                                    <Button key="delete"
+                                       onClick={() => showdDeleteConfirm(item.id)}>删除</Button>
+                                 ]}
+                              >
+                                 <div style={{ height: '330px', overflowY: 'auto' }}>
+                                    <p>{item.content}</p>
+                                    {item.image && (
+                                       <img
+                                          src={`data:image/png;base64,${item.image}`}
+                                          alt="dynamic"
+                                          style={{ maxWidth: '100%', maxHeight: '100px' }}
+                                       />
+                                    )}
+                                    <p>
+                                       {dayjs(item.publish_date).format('YYYY-MM-DD HH:mm')}
+                                    </p>
+                                 </div>
+                              </Card>
+                           </List.Item>
+                        )}
                      />
+                     <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginTop: '20px',
+                     }}>
+                        <div style={{ width: '80%' }}></div>
+                        <Pagination
+                           current={currentPage}
+                           pageSize={pageSize}
+                           total={total}
+                           onChange={handlePageChange}
+                           showTotal={(total) => `总共 ${total} 条`}
+                        />
+                     </div>
                   </div>
-               </div>
-            </Content>
-         </Layout>
-         <Modal
-            title={`${isEditMode ? '编辑' : '新增'}场馆动态`}
-            open={isModalVisible}
-            onOk={() => (isEditMode ? handleUpdate() : handleCreate())}
-            onCancel={() => setIsModalVisible(false)}
-         >
-            <Form form={form} layout="vertical">
-               <Form.Item
-                  name="title"
-                  label="标题"
-                  rules={[{ required: true, message: '请输入标题' }]}>
-                  <Input />
-               </Form.Item>
-               <Form.Item
-                  name="content"
-                  label="内容"
-                  rules={[{ required: true, message: '请输入内容' }]}>
-                  <Input.TextArea />
-               </Form.Item>
-               <Form.Item
-                  name="publish_date"
-                  label="发布日期"
-                  rules={[{ required: true, message: '请选择发布日期' }]}>
-                  <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
-               </Form.Item>
-               <Form.Item label="动态图片" name="image">
-                  <Upload
-                     showUploadList={false}
-                     beforeUpload={handleBeforeUpload}
-                     accept="image/*">
-                     <Button icon={<UploadOutlined />}>上传图片</Button>
-                  </Upload>
-                  {imagePreview && (
-                     <img
-                        src={imagePreview}
-                        alt="预览"
-                        style={{ maxWidth: '100%', marginTop: 10, maxHeight: '100px' }} />
-                  )}
-               </Form.Item>
-            </Form>
-         </Modal>
+               </Content>
+            </Layout>
+            <Modal
+               title={`${isEditMode ? '编辑' : '新增'}场馆动态`}
+               open={isModalVisible}
+               onOk={() => (isEditMode ? handleUpdate() : handleCreate())}
+               onCancel={() => setIsModalVisible(false)}
+            >
+               <Form form={form} layout="vertical">
+                  <Form.Item
+                     name="title"
+                     label="标题"
+                     rules={[{ required: true, message: '请输入标题' }]}>
+                     <Input />
+                  </Form.Item>
+                  <Form.Item
+                     name="content"
+                     label="内容"
+                     rules={[{ required: true, message: '请输入内容' }]}>
+                     <Input.TextArea />
+                  </Form.Item>
+                  <Form.Item
+                     name="publish_date"
+                     label="发布日期"
+                     rules={[{ required: true, message: '请选择发布日期' }]}>
+                     <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+                  </Form.Item>
+                  <Form.Item label="动态图片" name="image">
+                     <Upload
+                        showUploadList={false}
+                        beforeUpload={handleBeforeUpload}
+                        accept="image/*">
+                        <Button icon={<UploadOutlined />}>上传图片</Button>
+                     </Upload>
+                     {imagePreview && (
+                        <img
+                           src={imagePreview}
+                           alt="预览"
+                           style={{ maxWidth: '100%', marginTop: 10, maxHeight: '100px' }} />
+                     )}
+                  </Form.Item>
+               </Form>
+            </Modal>
+         </ConfigProvider>
       </>
    );
 };

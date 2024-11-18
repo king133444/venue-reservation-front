@@ -1,9 +1,11 @@
 import './reserveManage.less';
-
+import 'dayjs/locale/zh-cn';
+dayjs.locale('zh-cn');
 import {
-  Button, Calendar, DatePicker, Descriptions,
+  Button, Calendar, ConfigProvider, DatePicker, Descriptions,
   Layout, message, Modal, Select, Table, Tag
 } from 'antd';
+import locale from 'antd/locale/zh_CN';
 import axios from 'axios';
 import dayjs from 'dayjs';
 // import type { SetStateAction } from 'react';
@@ -413,6 +415,7 @@ const ReserveManage = () => {
               </Button>
 
               根据日期查询：
+              <ConfigProvider locale={locale}></ConfigProvider>
               <DatePicker
                 style={{ marginRight: '15px' }}
                 value={filterDate ? dayjs(filterDate) : null}
