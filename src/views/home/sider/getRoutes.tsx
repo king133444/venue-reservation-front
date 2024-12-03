@@ -2,7 +2,7 @@
 export const getRoutes = (key: string) => {
 	switch (key) {
 		case 'menu1':
-			return '/home';
+			return '/home/reserveManage';
 		case 'menu2':
 			return '/home/venueDynamics';
 		case 'menu3':
@@ -20,7 +20,7 @@ export const getRoutes = (key: string) => {
 export const getMenuKeys = (route: string) => {
 	// route = route.split('/')[1]
 	switch (route) {
-		case '/home':
+		case '/home/reserveManage':
 			return 'menu1';
 		case '/home/venueDynamics':
 			return 'menu2';

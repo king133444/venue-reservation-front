@@ -48,7 +48,7 @@ export const rootRouter: RouteConfig = [
 		),
 		children: [
 			{
-				path: '',
+				path: 'reserveManage',
 				element: (
 					<AuthRoute>
 						<ReserveManage />
@@ -57,7 +57,8 @@ export const rootRouter: RouteConfig = [
 				meta: {
 					title: '预约管理',
 					key: 'reserveManage'
-				}
+				},
+
 			},
 			{
 				path: 'venueDynamics',

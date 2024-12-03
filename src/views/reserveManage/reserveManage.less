@@ -2,6 +2,18 @@
   height: 90px;
 }
 
+.reservationTable .ant-table-thead > tr > th {
+  height: 30px; /* 或者您想要的任何高度 */
+  line-height: 30px; /* 通常设置为与height相同，以便垂直居中文本 */
+}
+
+.reservationTable .ant-table-thead > tr > th,
+.reservationTable .ant-table-tbody > tr > td {
+  text-align: center !important; /* 强制内容居中，使用 !important 提升优先级 */
+}
+
+
+
 .reservationTable .ant-table-pagination.ant-pagination {
   margin: 20px 0 0;
 }
