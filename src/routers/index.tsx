@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react';
 import { Navigate, useRoutes } from 'react-router-dom';
 
+import AccountManage from '@/views/accountManage';
 import DisclaimerForm from '@/views/disclaimers';
 import HomePage from '@/views/home/index';
 import Login from '@/views/login/index';
 import PersonalManage from '@/views/personalManage';
 import ReserveManage from '@/views/reserveManage';
+import RoleManage from '@/views/roleManage';
 import VenueDynamics from '@/views/venueDynamics';
 
 import AuthRoute from './AuthRouter';
@@ -96,7 +98,30 @@ export const rootRouter: RouteConfig = [
 					title: '免责设置',
 					key: 'disclaimers'
 				}
-			}
+			},
+			{
+				path: 'accountManagement',
+				element:
+					<AuthRoute>
+						<AccountManage />
+					</AuthRoute>,
+				meta: {
+					title: '账号管理',
+					key: 'accountManage'
+				}
+			},
+			{
+				path: 'roleManagement',
+				element:
+					<AuthRoute>
+						<RoleManage />
+					</AuthRoute>
+				,
+				meta: {
+					title: '角色管理',
+					key: 'roleManage'
+				}
+			},
 
 			// 添加其他子路由...
 		],
