@@ -205,5 +205,36 @@ export default {
 	// 退票
 	refundTickets: (params: any) => {
 		return fetchPost('/ticket/refundTickets', params);
-	}
+	},
+	/**
+	 * 账号管理相关接口
+	 */
+	// 获取信息
+	GetAllAccount: (params: any) => {
+		return fetchGet('/account/getAll', params);
+	},
+	CreateAccount: (params: any) => {
+		return fetchPost('/account/create', params);
+	},
+	UpdateAccount: (params: any) => {
+		return fetchPost('/account/update', params);
+	},
+	DeleteAccount: (params: any) => {
+		return fetchPost('/account/delete', params);
+	},
+	/**
+	 * 角色管理相关接口
+	 */
+	GetAllRole: (params: any) => {
+		return fetchGet('/role/getAll', params);
+	},
+	CreateRole: (params: any) => {
+		return fetchPost('/role/create', params);
+	},
+	UpdateRole: (params: any) => {
+		return fetchPost('/role/update', params);
+	},
+	DeleteRole: (params: any) => {
+		return fetchPost('/role/delete', params);
+	},
 };
