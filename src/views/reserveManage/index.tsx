@@ -2,50 +2,62 @@ import './reserveManage.less';
 import 'dayjs/locale/zh-cn';
 
 import {
-  Button, Calendar, Descriptions,
+  Button,
+  DatePicker,
+  Descriptions,
   Input,
-  Layout, message, Modal, Select, Space, Table,
+  Layout,
+  message,
+  Modal,
+  Space,
+  Table,
 } from 'antd';
 import Link from 'antd/es/typography/Link';
 import axios from 'axios';
 import dayjs from 'dayjs';
 dayjs.locale('zh-cn');
-// import type { SetStateAction } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
-import DateManage from '../dateManage';
-import SetReservationModal from '../reservePeoples';
+import api from '@/api';
+
 import CreateVenueTypeModal from './components/createVenueTypeModel';
 import ShowUserDetail from './components/showUserDetail';
+interface TimeslotDTO {
+  available: boolean;
+  start: string;
+  end: string;
+  number: number;
+}
+
+interface ReservationInfo {
+  id: number;
+  venueName: string;
+  date: Date;
+  isApplicableAllFutureDates: boolean;
+  availableDays: number[];
+  timeslots: {
+    morning: TimeslotDTO;
+    lunchtime: TimeslotDTO;
+    afternoon: TimeslotDTO;
+    evening: TimeslotDTO;
+  };
+}
+
 const { Content } = Layout;
 
 const ReserveManage = () => {
   const [showNextPage, setShowNextPage] = useState(false);
   const [activateKey, setActivateKey] = useState('1');
-  const [reservations, setReservations] = useState<any>([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isSettingModalVisible, setIsSettingModalVisible] = useState(false);
+  const [reservations, setReservations] = useState<ReservationInfo[]>([]);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(0);
   const [userDetails, setuserDetails] = useState<any>([]);
-  // const [filterDate, setFilterDate] = useState<string | null>(null);
-  // const [filterStatus, setFilterStatus] = useState('');
-  // const [filterSportType, setFilterSportType] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowHeight = 90;
-  const totalPages = Math.ceil(reservations.length / 10);
-  const isLastPage = currentPage === totalPages;
-  const dataOnLastPage = reservations.length % 10 || 10;
-  const actualDataCount = isLastPage ? dataOnLastPage : 10;
-  const fillHeight = isLastPage ? (10 - actualDataCount) * rowHeight : 0;
-  const [isCalendarModalVisible, setIsCalendarModalVisible] = useState(false);
-  const [selectedDateReservations, setSelectedDateReservations] = useState([]);
-  const [selectedDateCount, setSelectedDateCount] = useState(0);
-  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [isCreateVenueTypeModalVisible, setIsCreateVenueTypeModalVisible] = useState(false);
-  // const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  // const [currentEditReservation, setCurrentEditReservation] = useState(null);
+  const [venueTypeQuery, setVenueTypeQuery] = useState('');
+  const [filteredReservations, setFilteredReservations] = useState<ReservationInfo[]>([]);
+  const [dateQuery, setDateQuery] = useState('');
 
+  // 新建场馆类型
   const showCreateVenueTypeModal = () => {
     setIsCreateVenueTypeModalVisible(true);
   };
@@ -54,78 +66,53 @@ const ReserveManage = () => {
     setIsCreateVenueTypeModalVisible(false);
   };
 
-  // const showEditModal = (reservation) => {
-  //   setCurrentEditReservation(reservation);
-  //   setIsEditModalVisible(true);
-  // };
-
-  // 处理设置预约人数的逻辑
-  const handleOkSetting = async (sportType: string, availablePeoples: number) => {
+  // 获取所有场馆预约配置
+  const getReservations = useCallback(async () => {
     try {
-      const response = await axios.post(
-        'http://127.0.0.1:8001/ReservationPeoples/updateReservationPeoples', {
-        name: sportType,
-        available_peoples: availablePeoples,
-      });
-      if (response.status === 200) {
-        message.success('设置预约人数成功');
-        setIsSettingModalVisible(false);
-        fetchReservations();
-      } else {
-        message.error('设置预约人数失败');
-      }
-    } catch (error) {
-      message.error('设置预约人数失败，请稍后再试');
-    }
-  };
-
-  const convertDurationToTimeRange = (duration: any) => {
-    const durationStr = duration.toString();
-    const isShortFormat = durationStr.length === 7;
-
-    const startHour = parseInt(durationStr.slice(0, isShortFormat ? 1 : 2), 10);
-    const startMinute = parseInt(durationStr
-      .slice(isShortFormat ? 1 : 2, isShortFormat ? 3 : 4), 10);
-    const endHour = parseInt(durationStr.slice(isShortFormat ? 3 : 4, isShortFormat ? 5 : 6), 10);
-    const endMinute = parseInt(durationStr.slice(isShortFormat ? 5 : 6), 10);
-
-    const formatTime = (hour: any, minute: any) => {
-      return dayjs().hour(hour).minute(minute).format('HH:mm');
-    };
-    return `${formatTime(startHour, startMinute)} - ${formatTime(endHour, endMinute)}`;
-  };
-
-  // 连接前后端将预约信息显示在表格里
-  const fetchReservations = useCallback(async () => {
-    try {
-      // 直接发起请求，不再附加任何过滤参数
-      const response = await axios.get('http://127.0.0.1:8001/reservation');
-      if (response.status === 200) {
-        // 处理响应数据，这里假设您仍然需要对数据进行某种形式的处理
-        const processedData = response.data.map((item: any) => ({
-          ...item,
-          duration: convertDurationToTimeRange(item.duration),
+      const response: any = await api.getReservationInfo({});
+      const { success, message: info, data } = response;
+      if (success) {
+        const processedData: ReservationInfo[] = data.map((item: any) => ({
+          id: item.id,
+          venueName: item.venue_name,
+          date: item.date,
+          isApplicableAllFutureDates: item.is_applicable_all_future_dates,
+          availableDays: item.available_days,
+          timeslots: item.timeslots,
         }));
         setReservations(processedData);
-        setCurrentPage(1);
+        setFilteredReservations(processedData);
       } else {
-        message.error('获取预约信息失败');
+        message.error(info);
       }
     } catch (error) {
       message.error('获取预约信息失败，请稍后再试');
     }
-  }, []); // 移除了所有依赖项，因为过滤逻辑已经被删除
+  }, []);
 
   useEffect(() => {
-    fetchReservations();
-  }, [fetchReservations]);
+    getReservations();
+  }, [getReservations]);
 
-  // const showDateManageModal = () => {
-  //   setIsModalVisible(true);
-  // };
+  // 根据场馆类型和状态查询
+  const filterReservations = () => {
+    const filtered = reservations.filter(reservation => {
+      const matchesVenueType = !venueTypeQuery ||
+        reservation.venueName.toLowerCase().includes(venueTypeQuery.toLowerCase());
+      const matchesDate = !dateQuery || dayjs(reservation.date).isSame(dayjs(dateQuery), 'day');
+      return matchesVenueType && matchesDate;
+    });
+    setFilteredReservations(filtered);
+  };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
+  const handleSearch = () => {
+    filterReservations();
+  };
+
+  const handleReset = () => {
+    setVenueTypeQuery('');
+    setDateQuery('');
+    setFilteredReservations(reservations);
   };
 
   // 显示用户详情模态框
@@ -160,7 +147,7 @@ const ReserveManage = () => {
       const response = await axios.delete(`http://127.0.0.1:8001/reservation/delete/${reservationId}`);
       if (response.status === 200) {
         message.success('删除预约成功');
-        fetchReservations();
+        getReservations();
       } else {
         message.error('删除预约失败');
       }
@@ -182,68 +169,6 @@ const ReserveManage = () => {
     });
   };
 
-  // 日历统计
-  const renderCalendarModal = () => {
-    return (
-      <Modal
-        title="日历统计"
-        open={isCalendarModalVisible}
-        onCancel={() => setIsCalendarModalVisible(false)}
-        footer={null}
-      >
-        <Calendar
-          onSelect={async (date, info) => {
-            if (info.source === 'date') {
-              const dateString = date.format('YYYY-MM-DD');
-              try {
-                const response = await axios.get(`http://127.0.0.1:8001/reservation/byDate?date=${dateString}`);
-                if (response.status === 200 && response.data) {
-                  setSelectedDateReservations(response.data.data.timeSlots);
-                  setSelectedDateCount(response.data.data.totalCount);
-                  setIsDetailModalVisible(true);
-                }
-              } catch (error) {
-                message.error('获取预约信息失败，请稍后再试');
-              }
-            }
-          }}
-        />
-      </Modal>
-    );
-  };
-
-  // 日历统计中某一天的预约结果信息
-  const renderDateDetailModal = () => {
-    return (
-      <Modal
-        title={`预约总人数：${selectedDateCount} 人`}
-        open={isDetailModalVisible}
-        onCancel={() => setIsDetailModalVisible(false)}
-        footer={null}
-      >
-        <Table
-          dataSource={selectedDateReservations}
-          columns={[
-            {
-              title: '预约时间段',
-              dataIndex: 'duration',
-              key: 'duration',
-            },
-            { title: '预约人数', dataIndex: 'count', key: 'count' },
-          ]}
-          rowKey="id"
-        />
-      </Modal>
-    );
-  };
-
-  // const resetFilters = () => {
-  //   setFilterDate('');
-  //   setFilterStatus('');
-  //   setFilterSportType('');
-  //   fetchReservations();
-  // };
-
   useEffect(() => {
     if (detailModalVisible) {
       fetchUserDetails(selectedUserId).then((data) => {
@@ -260,89 +185,85 @@ const ReserveManage = () => {
     },
     {
       title: '场馆类型',
-      dataIndex: 'type_name',
-      key: 'type_name',
-      render: (text: any, record: any) => {
-        return (
-          <div>
-            {record.type_name === 'BASKETBALL' && '篮球'}
-            {record.type_name === 'BADMINTON' && '羽毛球'}
-          </div>
-        );
-      }
+      dataIndex: 'venueName',
+      key: 'venue_name',
     },
     {
       title: '日期',
-      dataIndex: 'time',
-      key: 'time',
+      dataIndex: 'date',
+      key: 'date',
       width: 200,
-      render: (text: dayjs.Dayjs) => dayjs(text).format('YYYY-MM-DD HH:mm'),
-      sorter: (a: any, b: any) => dayjs(a.time).unix() - dayjs(b.time).unix(),
+      render: (date: string) => dayjs(date).format('YYYY-MM-DD'), // 格式化日期为年月日
+      sorter: (a: any, b: any) => dayjs(a.date).unix() - dayjs(b.date).unix(),
     },
     {
       title: '时间段',
       children: [
         {
           title: '上午',
-          dataIndex: 'morning',
+          dataIndex: ['timeslots', 'morning'],
           key: 'morning',
-          // 以下render函数需要根据实际数据结构调整
-          render: () => (
-            <a
-              onClick={() => {
+          render: (timeslot: any) => (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : 'N/A'}</span>
+              <a style={{ marginLeft: '10px' }} onClick={() => {
                 setShowNextPage(true);
                 setActivateKey('1');
-              }
-              }
-            >查看预约详情</a>
+              }}>
+                查看预约详情
+              </a>
+            </div>
           ),
         },
         {
           title: '中午',
-          dataIndex: 'noon',
-          key: 'noon',
-          render: () => (
-            <a
-              onClick={() => {
+          dataIndex: ['timeslots', 'lunchtime'],
+          key: 'lunchtime',
+          render: (timeslot: any) => (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : 'N/A'}</span>
+              <a style={{ marginLeft: '10px' }} onClick={() => {
                 setShowNextPage(true);
                 setActivateKey('2');
-              }
-              }
-            >查看预约详情</a>
-
+              }}>
+                查看预约详情
+              </a>
+            </div>
           ),
         },
         {
           title: '下午',
-          dataIndex: 'afternoon',
+          dataIndex: ['timeslots', 'afternoon'],
           key: 'afternoon',
-          render: () => (
-            <a
-              onClick={() => {
-
+          render: (timeslot: any) => (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : 'N/A'}</span>
+              <a style={{ marginLeft: '10px' }} onClick={() => {
                 setShowNextPage(true);
                 setActivateKey('3');
-              }
-              }
-            >查看预约详情</a>
+              }}>
+                查看预约详情
+              </a>
+            </div>
           ),
         },
         {
           title: '晚上',
-          dataIndex: 'evening',
+          dataIndex: ['timeslots', 'evening'],
           key: 'evening',
-          render: () => (
-            <a
-              onClick={() => {
-
+          render: (timeslot: any) => (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : 'N/A'}</span>
+              <a style={{ marginLeft: '10px' }} onClick={() => {
                 setShowNextPage(true);
                 setActivateKey('4');
-              }
-              }
-            >查看预约详情</a>
+              }}>
+                查看预约详情
+              </a>
+            </div>
           ),
         },
-      ]
+      ],
     },
     {
       title: '操作',
@@ -410,17 +331,26 @@ const ReserveManage = () => {
             }}>
               <div>
                 <span>场馆类型：<Input
+                  value={venueTypeQuery} onChange={(e) => setVenueTypeQuery(e.target.value)}
                   type="text"
                   placeholder='请输入场馆类型'
                   style={{ width: 300, marginRight: '15px' }} /></span>
                 <span style={{ marginLeft: '40px' }}>状态：
-                  <Select
-                    placeholder='请选择日期'
-                    style={{ width: 300, marginRight: '15px' }}>
-                  </Select></span>
-                <Button type="primary" style={{ marginLeft: '10px' }}>查询
+                  <DatePicker
+                    value={dateQuery ? dayjs(dateQuery) : null}
+                    onChange={(date, dateString) => setDateQuery(dateString as string)} // 使用类型断言
+                    style={{ width: 300, marginRight: '15px' }}
+                    format="YYYY-MM-DD"
+                  />
+                </span>
+                <Button
+                  onClick={handleSearch}
+                  type="primary"
+                  style={{ marginLeft: '10px' }}>查询
                 </Button>
-                <Button style={{ marginLeft: '10px' }}>重置
+                <Button
+                  onClick={handleReset}
+                  style={{ marginLeft: '10px' }}>重置
                 </Button>
               </div>
               <div style={{
@@ -490,7 +420,7 @@ const ReserveManage = () => {
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: '80vh' }}>
                 <Table
                   className='reservationTable'
-                  dataSource={reservations}
+                  dataSource={filteredReservations}
                   columns={columns}
                   rowKey="id"
                   style={{
@@ -499,39 +429,13 @@ const ReserveManage = () => {
                     flexGrow: 1,
                     overflow: 'hidden'
                   }}
-                  pagination={{
-                    current: currentPage,
-                    className: 'pagination',
-                    pageSize: 10,
-                    hideOnSinglePage: false,
-                    onChange: (page) => {
-                      setCurrentPage(page);
-                    },
-                    showTotal: (total) => `总共 ${total} 条`
-                  }}
-                  footer={() => (
-                    <div style={{ height: fillHeight + 'px' }}></div>
-                  )} />
+                />
               </div>
+
             </Content>
           </Layout>
         </div>
-        <Modal
-          title="日期管理"
-          open={isModalVisible}
-          onCancel={handleCancel}
-          footer={null}
-          width={1000}
-        >
-          <DateManage />
-        </Modal>
-        <SetReservationModal
-          isVisible={isSettingModalVisible}
-          onCancel={() => setIsSettingModalVisible(false)}
-          onOk={(sportType, availablePeoples) => handleOkSetting(sportType, availablePeoples)} />
         {renderDetailModal()}
-        {renderCalendarModal()}
-        {renderDateDetailModal()}
       </div>}</>
   );
 };
