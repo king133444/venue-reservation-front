@@ -71,8 +71,28 @@ export default {
 	/**
 	 * 四、场馆预约相关接口
 	 */
-	// 获取场馆预约配置
-	getReservationInfo: (params: any) => {
-		return fetchGet('/reservationManagement/getReservationInfo', params);
+	// 获取以及条件查询场馆预约配置
+	queryReservationInfo: (params: any) => {
+		return fetchPost('/reservationManagement/query', params);
+	},
+	// 获取预约详情
+	queryReservationDetails: (params: any) => {
+		return fetchPost('/reservationManagement/queryDetails', params);
+	},
+	// 创建场馆预约配置
+	createReservationInfo: (params: any) => {
+		return fetchPost('/reservationManagement/create', params);
+	},
+	// 更新场馆预约配置
+	updateReservationInfo: (params: any) => {
+		return fetchPost('/reservationManagement/update', params);
+	},
+	// 删除场馆预约配置
+	deleteReservationInfo: (params: any) => {
+		return fetchPost('/reservationManagement/delete', params);
+	},
+	// 导出今日预约名单
+	handleExport: (params: any) => {
+		return fetchGet('/reservationManagement/export', params);
 	},
 };

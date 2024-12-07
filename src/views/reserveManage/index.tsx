@@ -22,6 +22,7 @@ import api from '@/api';
 
 import CreateVenueTypeModal from './components/createVenueTypeModel';
 import ShowUserDetail from './components/showUserDetail';
+import UpdateVenueTypeModal from './components/updateVenueTypeModel';
 interface TimeslotDTO {
   available: boolean;
   start: string;
@@ -53,26 +54,57 @@ const ReserveManage = () => {
   const [selectedUserId, setSelectedUserId] = useState(0);
   const [userDetails, setuserDetails] = useState<any>([]);
   const [isCreateVenueTypeModalVisible, setIsCreateVenueTypeModalVisible] = useState(false);
+  const [isUpdateVenueTypeModalVisible, setIsUpdateVenueTypeModalVisible] = useState(false);
   const [venueTypeQuery, setVenueTypeQuery] = useState('');
-  const [filteredReservations, setFilteredReservations] = useState<ReservationInfo[]>([]);
   const [dateQuery, setDateQuery] = useState('');
 
+  const [editData, setEditData] = useState<ReservationInfo>();
+  const [queryDetails, setQueryDetails] = useState<any>();
+  const handleKeyChanges = (value: string) => {
+    setActivateKey(value);
+    const newQueryDetails = getQueryDateForTab(value);
+    setQueryDetails((pre: any) => ({
+      ...pre,
+      time: newQueryDetails,
+    })); // 更新查询日期
+  };
+  const getQueryDateForTab = (key: string): string[] => {
+    switch (key) {
+      case '1':
+        return ['08:00-11:00'];
+      case '2':
+        return ['11:00-13:00'];
+      case '3':
+        return ['13:00-17:00'];
+      case '4':
+        return ['17:00-21:00'];
+      default:
+        return ['08:00-21:00'];
+    }
+  };
   // 新建场馆类型
   const showCreateVenueTypeModal = () => {
     setIsCreateVenueTypeModalVisible(true);
+  };
+  const showUpdateVenueTypeModal = (data: ReservationInfo) => {
+    setIsUpdateVenueTypeModalVisible(true);
+    setEditData(data);
   };
 
   const handleCloseCreateVenueTypeModal = () => {
     setIsCreateVenueTypeModalVisible(false);
   };
+  const handleCloseUpdateVenueTypeModal = () => {
+    setIsUpdateVenueTypeModalVisible(false);
+  };
 
   // 获取所有场馆预约配置
   const getReservations = useCallback(async () => {
     try {
-      const response: any = await api.getReservationInfo({});
+      const response: any = await api.queryReservationInfo({});
       const { success, message: info, data } = response;
       if (success) {
-        const processedData: ReservationInfo[] = data.map((item: any) => ({
+        const processedData: ReservationInfo[] = data.venues.map((item: any) => ({
           id: item.id,
           venueName: item.venue_name,
           date: item.date,
@@ -81,9 +113,9 @@ const ReserveManage = () => {
           timeslots: item.timeslots,
         }));
         setReservations(processedData);
-        setFilteredReservations(processedData);
+        // message.success(info);
       } else {
-        message.error(info);
+        message.info(info);
       }
     } catch (error) {
       message.error('获取预约信息失败，请稍后再试');
@@ -95,24 +127,79 @@ const ReserveManage = () => {
   }, [getReservations]);
 
   // 根据场馆类型和状态查询
-  const filterReservations = () => {
-    const filtered = reservations.filter(reservation => {
-      const matchesVenueType = !venueTypeQuery ||
-        reservation.venueName.toLowerCase().includes(venueTypeQuery.toLowerCase());
-      const matchesDate = !dateQuery || dayjs(reservation.date).isSame(dayjs(dateQuery), 'day');
-      return matchesVenueType && matchesDate;
-    });
-    setFilteredReservations(filtered);
-  };
+  // const filterReservations = () => {
+  //   const filtered = reservations.filter(reservation => {
+  //     const matchesVenueType = !venueTypeQuery ||
+  //       reservation.venueName.toLowerCase().includes(venueTypeQuery.toLowerCase());
+  //     const matchesDate = !dateQuery || dayjs(reservation.date).isSame(dayjs(dateQuery), 'day');
+  //     return matchesVenueType && matchesDate;
+  //   });
+  //   setFilteredReservations(filtered);
+  // };
 
-  const handleSearch = () => {
-    filterReservations();
+  const handleSearch = async () => {
+    // filterReservations();
+
+    try {
+      const response: any = await api.queryReservationInfo({
+        venue_name: venueTypeQuery,
+        date: dateQuery
+      });
+      const { success, message: info, data } = response;
+      if (success) {
+        const processedData: ReservationInfo[] = data.venues.map((item: any) => ({
+          id: item.id,
+          venueName: item.venue_name,
+          date: item.date,
+          isApplicableAllFutureDates: item.is_applicable_all_future_dates,
+          availableDays: item.available_days,
+          timeslots: item.timeslots,
+        }));
+        message.success(info);
+        setReservations(processedData);
+      } else {
+        message.error(info);
+      }
+    } catch (error) {
+      message.error('获取预约信息失败，请稍后再试');
+    }
+
+  };
+  const handleExport = async () => {
+    // filterReservations();
+
+    try {
+      const response: any = await api.handleExport({});
+      const { success, message: info, data } = response;
+
+      if (success) {
+
+        const arrayBuffer = new Uint8Array(data.data);
+        const blob = new Blob([arrayBuffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = '今日预约名单.xlsx'; // 指定下载文件名
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl); // 清除创建的URL
+      }
+      else {
+        message.error(info);
+      }
+    } catch (error) {
+      message.error('导出失败');
+    }
+
   };
 
   const handleReset = () => {
     setVenueTypeQuery('');
     setDateQuery('');
-    setFilteredReservations(reservations);
+    getReservations();
   };
 
   // 显示用户详情模态框
@@ -142,17 +229,24 @@ const ReserveManage = () => {
   };
 
   // 连接前后端中取消删除按钮
-  const deleteReservation = async (reservationId: number) => {
+  const deleteReservation = async (id: number) => {
     try {
-      const response = await axios.delete(`http://127.0.0.1:8001/reservation/delete/${reservationId}`);
-      if (response.status === 200) {
-        message.success('删除预约成功');
-        getReservations();
+      const response: any = await api.deleteReservationInfo({
+        id: id
+      });
+
+      const { success, message: info } = response;
+      if (success) {
+        message.success(info);
       } else {
-        message.error('删除预约失败');
+        message.error(info);
       }
     } catch (error: any) {
-      message.error(`请求错误: ${error.response?.data?.message || '未知错误，请稍后再试'}`);
+      message.error('删除失败');
+    } finally {
+      //  setTimeout(() => {
+      getReservations();
+      //  }, 1500);
     }
   };
 
@@ -176,6 +270,31 @@ const ReserveManage = () => {
       });
     }
   }, [detailModalVisible, selectedUserId]);
+
+  // 1. 格式化 date
+  const formatDate = (dateString: string | number | Date) => {
+    const date = new Date(dateString);
+    // 使用 toLocaleDateString 生成 YYYY-MM-DD 格式
+    // 注意：这种方法的输出可能依赖于浏览器的地区设置，下面的选项是针对大多数情况
+    return date.toLocaleDateString('en-CA'); // 'en-CA' 选项会生成 YYYY-MM-DD 格式
+  };
+
+  // 2. 转换 timeslot
+  const formatTimeslot = (timeslot: { start: any; end: any; }) => {
+    return [`${timeslot.start}-${timeslot.end}`]; // 注意：根据您的描述，应该使用 end 而不是 "10:00"
+  };
+  const showConfirm = () => {
+    Modal.confirm({
+      title: '确认导出',
+      content: '确认是否导出？',
+      onOk() {
+        handleExport();
+      },
+      onCancel() {
+      },
+    });
+  };
+
   const columns = [
     {
       title: '序号',
@@ -203,15 +322,20 @@ const ReserveManage = () => {
           title: '上午',
           dataIndex: ['timeslots', 'morning'],
           key: 'morning',
-          render: (timeslot: any) => (
+          render: (timeslot: any, record: any) => (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : 'N/A'}</span>
-              <a style={{ marginLeft: '10px' }} onClick={() => {
+              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : '暂未开放'}</span>
+              {timeslot.available && <a style={{ marginLeft: '10px' }} onClick={() => {
                 setShowNextPage(true);
                 setActivateKey('1');
+                setQueryDetails({
+                  id: record.id,
+                  date: formatDate(record.date),
+                  time: formatTimeslot(timeslot),
+                });
               }}>
                 查看预约详情
-              </a>
+              </a>}
             </div>
           ),
         },
@@ -219,15 +343,20 @@ const ReserveManage = () => {
           title: '中午',
           dataIndex: ['timeslots', 'lunchtime'],
           key: 'lunchtime',
-          render: (timeslot: any) => (
+          render: (timeslot: any, record: any) => (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : 'N/A'}</span>
-              <a style={{ marginLeft: '10px' }} onClick={() => {
+              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : '暂未开放'}</span>
+              {timeslot.available && <a style={{ marginLeft: '10px' }} onClick={() => {
                 setShowNextPage(true);
                 setActivateKey('2');
+                setQueryDetails({
+                  id: record.id,
+                  date: formatDate(record.date),
+                  time: formatTimeslot(timeslot),
+                });
               }}>
                 查看预约详情
-              </a>
+              </a>}
             </div>
           ),
         },
@@ -235,15 +364,20 @@ const ReserveManage = () => {
           title: '下午',
           dataIndex: ['timeslots', 'afternoon'],
           key: 'afternoon',
-          render: (timeslot: any) => (
+          render: (timeslot: any, record: any) => (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : 'N/A'}</span>
-              <a style={{ marginLeft: '10px' }} onClick={() => {
+              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : '暂未开放'}</span>
+              {timeslot.available && <a style={{ marginLeft: '10px' }} onClick={() => {
                 setShowNextPage(true);
                 setActivateKey('3');
+                setQueryDetails({
+                  id: record.id,
+                  date: formatDate(record.date),
+                  time: formatTimeslot(timeslot),
+                });
               }}>
                 查看预约详情
-              </a>
+              </a>}
             </div>
           ),
         },
@@ -251,15 +385,20 @@ const ReserveManage = () => {
           title: '晚上',
           dataIndex: ['timeslots', 'evening'],
           key: 'evening',
-          render: (timeslot: any) => (
+          render: (timeslot: any, record: any) => (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : 'N/A'}</span>
-              <a style={{ marginLeft: '10px' }} onClick={() => {
+              <span>{timeslot.start && timeslot.end ? `${timeslot.start}-${timeslot.end}` : '暂未开放'}</span>
+              {timeslot.available && <a style={{ marginLeft: '10px' }} onClick={() => {
                 setShowNextPage(true);
                 setActivateKey('4');
+                setQueryDetails({
+                  id: record.id,
+                  date: formatDate(record.date),
+                  time: formatTimeslot(timeslot),
+                });
               }}>
                 查看预约详情
-              </a>
+              </a>}
             </div>
           ),
         },
@@ -268,11 +407,11 @@ const ReserveManage = () => {
     {
       title: '操作',
       key: 'operation',
-      render: (_: any, record: { id: number; }) => {
+      render: (_: any, record: any) => {
         return (
           <div>
             <Space>
-              <Link onClick={() => ShowUserDetail}>修改</Link>
+              <Link onClick={() => showUpdateVenueTypeModal(record)}>修改</Link>
               {/* <Link onClick={() => showEditModal(record)}>修改</Link> */}
               <Link onClick={() => showDeleteConfirm(record.id)}>删除</Link>
             </Space>
@@ -316,7 +455,8 @@ const ReserveManage = () => {
       <ShowUserDetail
         setShow={setShowNextPage}
         activeKey={activateKey}
-        setActivateKey={setActivateKey}
+        handleKeyChange={handleKeyChanges}
+        queryDate={queryDetails}
       /> : <div>
         <div className='frame'>
           <Layout style={{
@@ -331,6 +471,7 @@ const ReserveManage = () => {
             }}>
               <div>
                 <span>场馆类型：<Input
+                  allowClear
                   value={venueTypeQuery} onChange={(e) => setVenueTypeQuery(e.target.value)}
                   type="text"
                   placeholder='请输入场馆类型'
@@ -369,11 +510,18 @@ const ReserveManage = () => {
                 <CreateVenueTypeModal
                   isVisible={isCreateVenueTypeModalVisible}
                   onClose={handleCloseCreateVenueTypeModal}
+                  getInfo={getReservations}
+                />
+                <UpdateVenueTypeModal
+                  editData={editData}
+                  isVisible={isUpdateVenueTypeModalVisible}
+                  onClose={handleCloseUpdateVenueTypeModal}
+                  getInfo={getReservations}
                 />
                 <Button type="primary" onClick={showCreateVenueTypeModal}>
                   新建场馆类型
                 </Button>
-                <Button type="primary">导出今日预约名单
+                <Button type="primary" onClick={showConfirm}>导出今日预约名单
                 </Button>
               </div>
               {/* <div style={{ marginBottom: '16px' }}>
@@ -420,7 +568,7 @@ const ReserveManage = () => {
               <div style={{ display: 'flex', flexDirection: 'column', minHeight: '80vh' }}>
                 <Table
                   className='reservationTable'
-                  dataSource={filteredReservations}
+                  dataSource={reservations}
                   columns={columns}
                   rowKey="id"
                   style={{
