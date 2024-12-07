@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, useRoutes } from 'react-router-dom';
 
+import Audits from '@/views/audits';
 import DisclaimerForm from '@/views/disclaimers';
 import HomePage from '@/views/home/index';
 import Login from '@/views/login/index';
@@ -95,6 +96,18 @@ export const rootRouter: RouteConfig = [
 				meta: {
 					title: '免责设置',
 					key: 'disclaimers'
+				}
+			},
+			{
+				path: 'audits',
+				element: (
+					<AuthRoute>
+						<Audits />
+					</AuthRoute>
+				),
+				meta: {
+					title: '申请审核',
+					key: 'audits'
 				}
 			}
 

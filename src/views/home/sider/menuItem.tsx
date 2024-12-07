@@ -1,4 +1,8 @@
-import { HomeOutlined, LogoutOutlined, ProjectOutlined, SmileOutlined } from '@ant-design/icons';
+import {
+	CheckCircleOutlined,
+	HomeOutlined, LogoutOutlined, MutedOutlined,
+	ProjectOutlined, SmileOutlined
+} from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import type { ItemType } from 'antd/es/menu/interface';
 import React from 'react';
@@ -28,9 +32,9 @@ export default function getItems() {
 		getItem('场馆动态', 'menu2', <ProjectOutlined rev={undefined} />),
 		getItem('预约管理', 'menu1', <HomeOutlined rev={undefined} />),
 		getItem('人员管理', 'menu3', <SmileOutlined rev={undefined} />),
-		getItem('免责设置', 'menu5', <SmileOutlined rev={undefined} />),
+		getItem('申请审核', 'menu6', <CheckCircleOutlined rev={undefined} />),
+		getItem('免责设置', 'menu5', <MutedOutlined rev={undefined} />),
 		getItem('退出', 'menu4', <LogoutOutlined rev={undefined} />)
 	];
-
 	return items;
 }
