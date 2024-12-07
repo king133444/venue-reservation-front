@@ -1,5 +1,7 @@
 import {
 	AuditOutlined,
+	CheckCircleOutlined,
+	EyeOutlined,
 	HistoryOutlined,
 	LogoutOutlined,
 	ProjectOutlined,
@@ -36,7 +38,9 @@ export default function getItems() {
 	items = [
 		getItem('场馆动态', 'menu2', <ProjectOutlined rev={undefined} />),
 		getItem('预约管理', 'menu1', <HistoryOutlined rev={undefined} />),
+		getItem('预约查看', 'menu9', <EyeOutlined rev={undefined} />),
 		getItem('人员管理', 'menu3', <TeamOutlined rev={undefined} />),
+		getItem('申请审核', 'menu8', <CheckCircleOutlined rev={undefined} />),
 		getItem('免责设置', 'menu5', <SolutionOutlined rev={undefined} />),
 		getItem('权限管理', '', <AuditOutlined rev={undefined} />, [
 			getItem('账号管理', 'menu6', <ReconciliationOutlined rev={undefined} />),
@@ -44,6 +48,5 @@ export default function getItems() {
 		]),
 		getItem('退出', 'menu4', <LogoutOutlined rev={undefined} />)
 	];
-
 	return items;
 }
