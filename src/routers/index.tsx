@@ -2,11 +2,13 @@ import type { ReactNode } from 'react';
 import { Navigate, useRoutes } from 'react-router-dom';
 
 import AccountManage from '@/views/accountManage';
+import Audits from '@/views/audits';
 import DisclaimerForm from '@/views/disclaimers';
 import HomePage from '@/views/home/index';
 import Login from '@/views/login/index';
 import PersonalManage from '@/views/personalManage';
 import ReserveManage from '@/views/reserveManage';
+import ReserveView from '@/views/reserveView';
 import RoleManage from '@/views/roleManage';
 import VenueDynamics from '@/views/venueDynamics';
 
@@ -100,6 +102,18 @@ export const rootRouter: RouteConfig = [
 				}
 			},
 			{
+				path: 'audits',
+				element: (
+					<AuthRoute>
+						<Audits />
+					</AuthRoute>
+				),
+				meta: {
+					title: '申请审核',
+					key: 'audits'
+				}
+			},
+			{
 				path: 'accountManagement',
 				element:
 					<AuthRoute>
@@ -121,6 +135,19 @@ export const rootRouter: RouteConfig = [
 					title: '角色管理',
 					key: 'roleManage'
 				}
+			},
+			{
+				path: 'reserveView',
+				element: (
+					<AuthRoute>
+						<ReserveView />
+					</AuthRoute>
+				),
+				meta: {
+					title: '预约查看',
+					key: 'reserveView'
+				},
+
 			},
 
 			// 添加其他子路由...

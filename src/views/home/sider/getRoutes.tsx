@@ -13,6 +13,10 @@ export const getRoutes = (key: string) => {
 			return '/home/accountManagement';
 		case 'menu7':
 			return '/home/roleManagement';
+		case 'menu8':
+			return '/home/audits';
+		case 'menu9':
+			return '/home/reserveView';
 		case 'menu4':
 			return '/login';
 		default:
@@ -36,8 +40,12 @@ export const getMenuKeys = (route: string) => {
 			return 'menu6';
 		case '/home/roleManagement':
 			return 'menu7';
+		case '/home/audits':
+			return 'menu8';
 		case '/login':
 			return 'menu4';
+		case '/home/reserveView':
+			return 'menu9';
 		default:
 			return '/';
 	}

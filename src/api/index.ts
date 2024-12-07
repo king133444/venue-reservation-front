@@ -41,6 +41,14 @@ export default {
 	GetUsers: (params: any) => {
 		return fetchGet('/users/getUsers', params);
 	},
+	// 查询单位和协会
+	GetAudits: (params: any) => {
+		return fetchGet('/audits/getAudits', params);
+	},
+	// 审核列表 
+	AuditUser: (params: any) => {
+		return fetchPost('/audits/auditUser', params);
+	},
 	// 新增用户
 	CreateUser: (params: any) => {
 		return fetchPost('/users/createUser', params);
@@ -49,9 +57,8 @@ export default {
 	UploadUsers: (params: any) => {
 		return uploadFile('/users/uploadUsers', params);
 	},
-	/**
-	 * 三、场馆动态相关接口
-	 */
+	// 审核用户
+	BatchApprove: (userIds: number[]) => fetchPost('/audits/batchApprove', { userIds }),
 	// 场馆动态列表
 	GetPosts: (params: any) => {
 		return fetchGet('/venuePosts/getPosts', params);

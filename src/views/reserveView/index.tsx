@@ -9,10 +9,8 @@ import {
   Layout,
   message,
   Modal,
-  Space,
   Table,
 } from 'antd';
-import Link from 'antd/es/typography/Link';
 import axios from 'axios';
 import dayjs from 'dayjs';
 dayjs.locale('zh-cn');
@@ -20,9 +18,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import api from '@/api';
 
-import CreateVenueTypeModal from './components/createVenueTypeModel';
 import ShowUserDetail from './components/showUserDetail';
-import UpdateVenueTypeModal from './components/updateVenueTypeModel';
 interface TimeslotDTO {
   available: boolean;
   start: string;
@@ -46,19 +42,19 @@ interface ReservationInfo {
 
 const { Content } = Layout;
 
-const ReserveManage = () => {
+const ReserveView = () => {
   const [showNextPage, setShowNextPage] = useState(false);
   const [activateKey, setActivateKey] = useState('1');
   const [reservations, setReservations] = useState<ReservationInfo[]>([]);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(0);
   const [userDetails, setuserDetails] = useState<any>([]);
-  const [isCreateVenueTypeModalVisible, setIsCreateVenueTypeModalVisible] = useState(false);
-  const [isUpdateVenueTypeModalVisible, setIsUpdateVenueTypeModalVisible] = useState(false);
+  // const [isCreateVenueTypeModalVisible, setIsCreateVenueTypeModalVisible] = useState(false);
+  // const [isUpdateVenueTypeModalVisible, setIsUpdateVenueTypeModalVisible] = useState(false);
   const [venueTypeQuery, setVenueTypeQuery] = useState('');
   const [dateQuery, setDateQuery] = useState('');
 
-  const [editData, setEditData] = useState<ReservationInfo>();
+  // const [editData, setEditData] = useState<ReservationInfo>();
   const [queryDetails, setQueryDetails] = useState<any>();
   const handleKeyChanges = (value: string) => {
     setActivateKey(value);
@@ -82,21 +78,18 @@ const ReserveManage = () => {
         return ['08:00-21:00'];
     }
   };
-  // 新建场馆类型
-  const showCreateVenueTypeModal = () => {
-    setIsCreateVenueTypeModalVisible(true);
-  };
-  const showUpdateVenueTypeModal = (data: ReservationInfo) => {
-    setIsUpdateVenueTypeModalVisible(true);
-    setEditData(data);
-  };
 
-  const handleCloseCreateVenueTypeModal = () => {
-    setIsCreateVenueTypeModalVisible(false);
-  };
-  const handleCloseUpdateVenueTypeModal = () => {
-    setIsUpdateVenueTypeModalVisible(false);
-  };
+  // const showUpdateVenueTypeModal = (data: ReservationInfo) => {
+  //   setIsUpdateVenueTypeModalVisible(true);
+  //   setEditData(data);
+  // };
+
+  // const handleCloseCreateVenueTypeModal = () => {
+  //   setIsCreateVenueTypeModalVisible(false);
+  // };
+  // const handleCloseUpdateVenueTypeModal = () => {
+  //   setIsUpdateVenueTypeModalVisible(false);
+  // };
 
   // 获取所有场馆预约配置
   const getReservations = useCallback(async () => {
@@ -173,7 +166,7 @@ const ReserveManage = () => {
       const { success, message: info, data } = response;
 
       if (success) {
-        message.info(info);
+
         const arrayBuffer = new Uint8Array(data.data);
         const blob = new Blob([arrayBuffer], {
           type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -186,6 +179,7 @@ const ReserveManage = () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(downloadUrl); // 清除创建的URL
+        message.info(info);
       }
       else {
         message.error(info);
@@ -229,39 +223,39 @@ const ReserveManage = () => {
   };
 
   // 连接前后端中取消删除按钮
-  const deleteReservation = async (id: number) => {
-    try {
-      const response: any = await api.deleteReservationInfo({
-        id: id
-      });
+  // const deleteReservation = async (id: number) => {
+  //   try {
+  //     const response: any = await api.deleteReservationInfo({
+  //       id: id
+  //     });
 
-      const { success, message: info } = response;
-      if (success) {
-        message.success(info);
-      } else {
-        message.error(info);
-      }
-    } catch (error: any) {
-      message.error('删除失败');
-    } finally {
-      //  setTimeout(() => {
-      getReservations();
-      //  }, 1500);
-    }
-  };
+  //     const { success, message: info } = response;
+  //     if (success) {
+  //       message.success(info);
+  //     } else {
+  //       message.error(info);
+  //     }
+  //   } catch (error: any) {
+  //     message.error('删除失败');
+  //   } finally {
+  //     //  setTimeout(() => {
+  //     getReservations();
+  //     //  }, 1500);
+  //   }
+  // };
 
-  const showDeleteConfirm = (reservationId: number) => {
-    Modal.confirm({
-      title: '确认删除这个预约吗？',
-      content: '该操作无法撤销',
-      okText: '确认',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk() {
-        deleteReservation(reservationId);
-      },
-    });
-  };
+  // const showDeleteConfirm = (reservationId: number) => {
+  //   Modal.confirm({
+  //     title: '确认删除这个预约吗？',
+  //     content: '该操作无法撤销',
+  //     okText: '确认',
+  //     okType: 'danger',
+  //     cancelText: '取消',
+  //     onOk() {
+  //       deleteReservation(reservationId);
+  //     },
+  //   });
+  // };
 
   useEffect(() => {
     if (detailModalVisible) {
@@ -404,22 +398,22 @@ const ReserveManage = () => {
         },
       ],
     },
-    {
-      title: '操作',
-      key: 'operation',
-      render: (_: any, record: any) => {
-        return (
-          <div>
-            <Space>
-              <Link onClick={() => showUpdateVenueTypeModal(record)}>修改</Link>
-              {/* <Link onClick={() => showEditModal(record)}>修改</Link> */}
-              <Link onClick={() => showDeleteConfirm(record.id)}>删除</Link>
-            </Space>
+    // {
+    //   title: '操作',
+    //   key: 'operation',
+    //   render: (_: any, record: any) => {
+    //     return (
+    //       <div>
+    //         <Space>
+    //           <Link onClick={() => showUpdateVenueTypeModal(record)}>修改</Link>
+    //           {/* <Link onClick={() => showEditModal(record)}>修改</Link> */}
+    //           <Link onClick={() => showDeleteConfirm(record.id)}>删除</Link>
+    //         </Space>
 
-          </div>
-        );
-      }
-    },
+    //       </div>
+    //     );
+    //   }
+    // },
   ];
 
   // 注意：showEditModal, showDetailModal, showEditConfirm, showDeleteConfirm等函数需要您实现，这些函数将处理按钮点击事件。
@@ -469,30 +463,37 @@ const ReserveManage = () => {
             <Content style={{
               flexDirection: 'column',
             }}>
-              <div>
-                <span>场馆类型：<Input
-                  allowClear
-                  value={venueTypeQuery} onChange={(e) => setVenueTypeQuery(e.target.value)}
-                  type="text"
-                  placeholder='请输入场馆类型'
-                  style={{ width: 300, marginRight: '15px' }} /></span>
-                <span style={{ marginLeft: '40px' }}>状态：
-                  <DatePicker
-                    value={dateQuery ? dayjs(dateQuery) : null}
-                    onChange={(date, dateString) => setDateQuery(dateString as string)} // 使用类型断言
-                    style={{ width: 300, marginRight: '15px' }}
-                    format="YYYY-MM-DD"
-                  />
-                </span>
-                <Button
-                  onClick={handleSearch}
-                  type="primary"
-                  style={{ marginLeft: '10px' }}>查询
-                </Button>
-                <Button
-                  onClick={handleReset}
-                  style={{ marginLeft: '10px' }}>重置
-                </Button>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div>
+                  <span>场馆类型：<Input
+                    allowClear
+                    value={venueTypeQuery} onChange={(e) => setVenueTypeQuery(e.target.value)}
+                    type="text"
+                    placeholder='请输入场馆类型'
+                    style={{ width: 300, marginRight: '15px' }} /></span>
+                  <span style={{ marginLeft: '40px' }}>状态：
+                    <DatePicker
+                      value={dateQuery ? dayjs(dateQuery) : null}
+                      onChange={(date, dateString) => setDateQuery(dateString as string)} // 使用类型断言
+                      style={{ width: 300, marginRight: '15px' }}
+                      format="YYYY-MM-DD"
+                    />
+                  </span>
+                  <Button
+                    onClick={handleSearch}
+                    type="primary"
+                    style={{ marginLeft: '10px' }}>查询
+                  </Button>
+                  <Button
+                    onClick={handleReset}
+                    style={{ marginLeft: '10px' }}>重置
+                  </Button>
+                </div>
+                <div>
+                  <Button type="primary" onClick={showConfirm}>导出今日预约名单
+                  </Button>
+                </div>
+
               </div>
               <div style={{
                 display: 'flex',
@@ -507,7 +508,7 @@ const ReserveManage = () => {
                     handleOkSetting(sportType, availablePeoples)}
                 // reservation={currentEditReservation} // 传递当前需要编辑的预约信息
                 /> */}
-                <CreateVenueTypeModal
+                {/* <CreateVenueTypeModal
                   isVisible={isCreateVenueTypeModalVisible}
                   onClose={handleCloseCreateVenueTypeModal}
                   getInfo={getReservations}
@@ -517,12 +518,8 @@ const ReserveManage = () => {
                   isVisible={isUpdateVenueTypeModalVisible}
                   onClose={handleCloseUpdateVenueTypeModal}
                   getInfo={getReservations}
-                />
-                <Button type="primary" onClick={showCreateVenueTypeModal}>
-                  新建场馆类型
-                </Button>
-                <Button type="primary" onClick={showConfirm}>导出今日预约名单
-                </Button>
+                /> */}
+
               </div>
               {/* <div style={{ marginBottom: '16px' }}>
       <Button onClick={showDateManageModal}>
@@ -584,8 +581,8 @@ const ReserveManage = () => {
           </Layout>
         </div>
         {renderDetailModal()}
-      </div>}</>
+      </div >}</>
   );
 };
 
-export default ReserveManage;
+export default ReserveView;
