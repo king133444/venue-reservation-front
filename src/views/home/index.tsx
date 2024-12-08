@@ -8,13 +8,15 @@ import siderLogo from '@/assets/images/logo.svg';
 
 import LayoutHeader from './header';
 import { getMenuKeys, getRoutes } from './sider/getRoutes';
-import getItems from './sider/menuItem';
+import useItems from './sider/menuItem';
 
 const { Sider, Content } = Layout;
 const Home: React.FC = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const items = getItems();
+	const [id, setId] = useState(location.state?.id);
+	const items = useItems(id);
+
 	// 通过menu值改变路由
 	const [selectKey, setSelectKey] = useState(getMenuKeys(location.pathname));
 
@@ -26,6 +28,11 @@ const Home: React.FC = () => {
 		const menuKey = getMenuKeys(location.pathname);
 		setSelectKey(menuKey);
 	}, [location.pathname]);
+	useEffect(() => {
+		if (location.state?.id) {
+			setId(id);
+		}
+	}, [id, location.state]);
 
 	return (
 		<>

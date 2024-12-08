@@ -5,11 +5,12 @@ import { useNavigate } from 'react-router-dom';
 const { Header } = Layout;
 export default function LayoutHeader() {
   const navigate = useNavigate();
-
+  const id = sessionStorage.getItem('id') ?? '暂无';
+  const role = sessionStorage.getItem('role') ?? '暂无';
   const logout = () => {
-    sessionStorage.setItem('access_token', '');
-    sessionStorage.setItem('refresh_token', '');
-    sessionStorage.setItem('selectKey', '');
+    sessionStorage.setItem('id', '');
+    sessionStorage.setItem('role', '');
+    sessionStorage.setItem('auth', '');
     navigate('/login');
   };
   return (
@@ -30,76 +31,54 @@ export default function LayoutHeader() {
       >
         <Popover
           content={
-            <Row style={{ width: '300px', height: '180px' }} justify={'center'}>
+            <Row style={{ width: '300px', }} justify="start" align="middle">
+              {/* 头像列 */}
               <Col
-                span={12}
+                span={8}
                 style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Avatar
-                  style={{ marginRight: 30, marginBottom: 30, backgroundColor: '#87d068' }}
+                  style={{ backgroundColor: '#87d068' }}
                   size={64}>
-                  管理员
+                  {role} {/* 假设头像显示角色名的首字母 */}
                 </Avatar>
               </Col>
-              <Col span={12}>
-                <Row align="middle" style={{ marginTop: '2vh' }}>
-                  <Col span={8} style={{ fontSize: 14 }}>
-                    身份：
-                  </Col>
-                  <Col span={16}>管理员</Col>
-                </Row>
-                <Row align="middle" style={{ marginTop: '2vh' }}>
-                  <Col span={8} style={{ fontSize: 14 }}>
-                    用户名:
-                  </Col>
-                  <Col span={16}>admin</Col>
-                </Row>
-                <Row align="middle" style={{ marginTop: '2vh' }}>
-                  <Col span={8} style={{ fontSize: 14 }}>
-                    邮箱:
-                  </Col>
-                  <Col span={16} style={{ fontSize: 14 }}>
-                    123456
-                  </Col>
-                </Row>
-              </Col>
-              <Row
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginLeft: '2vw',
-                  marginTop: '2vh'
-                }}
-              >
-                <Col style={{ marginRight: '50px' }}>
-                  <Button
-                    type="primary"
-                    size="small"
-                  // style={{ width: '6vw' }}
-                  >
+              {/* 信息列 */}
+              <Col span={16}>
+                {/* ID 和 角色名 */}
+                <div style={{ padding: '0 10px' }}>
+                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>ID: {id}</p>
+                  <p style={{
+                    margin: '10px 0', fontSize: '16px', fontWeight: 'bold'
+                  }}>身份: {role}</p>
+                </div>
+                {/* 按钮 */}
+                <Row
+                  justify="space-around"
+                  style={{ marginTop: '10px' }}
+                >
+                  <Button type="link">
                     修改密码
                   </Button>
-                </Col>
-                <Col>
                   <Button
-                    type="text"
+                    type="link"
                     size="small"
-                    // style={{ width: '6vw' }}
                     onClick={() => {
                       logout();
                     }}
                   >
-                    登出
+                    退出
                   </Button>
-                </Col>
-              </Row>
+                </Row>
+              </Col>
             </Row>
           }
           trigger="click"
         >
           <Avatar
-            style={{ marginRight: 40, backgroundColor: '#87d068' }}
-            icon={<UserOutlined rev={undefined} />} />
+            style={{ backgroundColor: '#87d068' }}
+            icon={<UserOutlined />} />
         </Popover>
+
       </Header>
     </>
   );

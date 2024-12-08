@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import api from '@/api';
-import { HOME_URL } from '@/config/config';
+import { HOME_URL1, HOME_URL2 } from '@/config/config';
 
 const LoginForm = () => {
 	const navigate = useNavigate();
@@ -18,14 +18,23 @@ const LoginForm = () => {
 		setLoading(true);
 		try {
 			const response: any = await api.Login({ username, password });
+			const { success, message: info, data } = response;
+			const { accountId, roleName, auth } = data;
 			// 检查登录是否成功
-			if (response.data.success) {
-				sessionStorage.setItem('username', username); // 根据实际需求决定是否需要
-				message.success(response.data.message);
-				navigate(location.state?.from || HOME_URL);
+			if (success) {
+				sessionStorage.setItem('id', accountId);
+				sessionStorage.setItem('role', roleName);
+				sessionStorage.setItem('auth', auth);
+				message.success(info);
+				if (roleName === '管理员') {
+					navigate(location.state?.from || HOME_URL1, { state: { id: accountId } });
+				} else {
+					navigate(location.state?.from || HOME_URL2, { state: { id: accountId } });
+				}
+
 			} else {
 				// 登录失败，显示错误消息，不跳转页面
-				message.error(response.data.message || '登录失败');
+				message.error(info || '登录失败');
 			}
 		} catch (error) {
 			// API调用异常，显示错误消息，不跳转页面
