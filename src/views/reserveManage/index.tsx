@@ -170,27 +170,32 @@ const ReserveManage = () => {
 
     try {
       const response: any = await api.handleExport({});
+
       const { success, message: info, data } = response;
 
       if (success) {
+
+        if (data && data.data) {
+          const arrayBuffer = new Uint8Array(data.data);
+          const blob = new Blob([arrayBuffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          });
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = '今日预约名单.xlsx'; // 指定下载文件名
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(downloadUrl); // 清除创建的URL
+        }
         message.info(info);
-        const arrayBuffer = new Uint8Array(data.data);
-        const blob = new Blob([arrayBuffer], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        const downloadUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = '今日预约名单.xlsx'; // 指定下载文件名
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(downloadUrl); // 清除创建的URL
       }
       else {
         message.error(info);
       }
     } catch (error) {
+
       message.error('导出失败');
     }
 
@@ -288,6 +293,7 @@ const ReserveManage = () => {
       title: '确认导出',
       content: '确认是否导出？',
       onOk() {
+
         handleExport();
       },
       onCancel() {

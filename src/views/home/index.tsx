@@ -14,7 +14,7 @@ const { Sider, Content } = Layout;
 const Home: React.FC = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const [id, setId] = useState(location.state?.id);
+	const [id, setId] = useState(location.state?.id || sessionStorage.getItem('id'));
 	const items = useItems(id);
 
 	// 通过menu值改变路由

@@ -217,7 +217,7 @@ const RoleManagement = () => {
   const options = [
     { label: '场馆动态', value: '场馆动态' },
     { label: '预约管理', value: '预约管理' },
-    { label: '预约查看', value: '预约查看' },
+    { label: '预约查看', value: '预约查看', disabled: true },
     { label: '人员管理', value: '人员管理' },
     { label: '申请审核', value: '申请审核' },
     { label: '免责设置', value: '免责设置' },
@@ -330,7 +330,6 @@ const RoleManagement = () => {
           >
             <Select
               mode="multiple"
-              allowClear
               style={{ width: '100%' }}
               placeholder="请选择分配的权限"
               onChange={handleChange}

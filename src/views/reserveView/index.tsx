@@ -167,18 +167,20 @@ const ReserveView = () => {
 
       if (success) {
 
-        const arrayBuffer = new Uint8Array(data.data);
-        const blob = new Blob([arrayBuffer], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        const downloadUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = '今日预约名单.xlsx'; // 指定下载文件名
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(downloadUrl); // 清除创建的URL
+        if (data && data.data) {
+          const arrayBuffer = new Uint8Array(data.data);
+          const blob = new Blob([arrayBuffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          });
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = '今日预约名单.xlsx'; // 指定下载文件名
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(downloadUrl); // 清除创建的URL
+        }
         message.info(info);
       }
       else {

@@ -81,7 +81,7 @@ const UserManagement = () => {
 		}
 	};
 
-	const fetchFilteredUsers = async (organization, association) => {
+	const fetchFilteredUsers = async (organization: any, association: any) => {
 		try {
 			// 构建查询参数
 			const params = { organization, association };
@@ -95,7 +95,7 @@ const UserManagement = () => {
 		}
 	};
 
-	const handleSearch = async (values) => {
+	const handleSearch = async (values: any) => {
 		const { organization, association } = values;
 		const filteredData = await fetchFilteredUsers(organization, association);
 		setData(filteredData.data);
@@ -127,10 +127,10 @@ const UserManagement = () => {
 	// 导出用户名单
 	const exportToExcel = () => {
 		// 首先，我们需要确保数据是按照分页排序的，并且有一个连续的序号
-		const sortedData = data.slice(); // 复制数据以避免修改原始数据
+		const sortedData: any = data.slice(); // 复制数据以避免修改原始数据
 
 		// 为每一行数据添加序号，并去掉 id 列
-		const 序号数据 = sortedData.map((item, index) => ({
+		const 序号数据 = sortedData.map((item: any, index: number) => ({
 			序号: index + 1, // 序号从1开始
 			姓名: item.name,
 			单位: item.organization,
@@ -439,7 +439,7 @@ const UserManagement = () => {
 						<Form form={form} layout="inline" onFinish={handleSearch}>
 							<Form.Item label="单位" name="organization">
 								<Select placeholder="请选择单位" allowClear>
-									{originalData.map(org => (
+									{originalData.map((org: any) => (
 										<Option key={org} value={org.organization}>
 											{org.organization}</Option>
 									))}

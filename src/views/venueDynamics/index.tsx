@@ -1,4 +1,5 @@
 import 'dayjs/locale/zh-cn';
+import 'dayjs/locale/zh-cn';
 
 import { UploadOutlined } from '@ant-design/icons';
 import {

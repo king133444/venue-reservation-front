@@ -4,8 +4,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 const AuthRoute = ({ children }: any) => {
 	const location = useLocation();
 	// const accessToken = sessionStorage.getItem('access_token');
-	const username = sessionStorage.getItem('username');
-	if (!username) {
+	const id = sessionStorage.getItem('id');
+	if (!id) {
 		// 用户未登录，重定向到登录页面，并保存当前页面的路径，以便登录后跳转回来
 		return <Navigate to="/login" state={{ from: location }} replace />;
 	}

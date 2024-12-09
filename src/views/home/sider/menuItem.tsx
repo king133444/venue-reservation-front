@@ -72,10 +72,11 @@ export default function useItems(id: string) {
 				getItem('账号管理', 'menu6', <ReconciliationOutlined />),
 				getItem('角色管理', 'menu7', <UserOutlined />),
 			]),
-			'退出': getItem('退出', 'menu4', <LogoutOutlined />)
-		};
 
+		};
 		const updateItems = menus.map((item: any) => menuMapping[item]).filter(Boolean);
+		const exit = getItem('退出', 'menu4', <LogoutOutlined />);
+		updateItems.push(exit);
 		setItems(updateItems);
 	}, [menus]);
 
