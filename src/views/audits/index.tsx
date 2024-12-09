@@ -6,10 +6,7 @@ import {
 	Modal, Radio, Table,
 } from 'antd';
 import { Content } from 'antd/es/layout/layout';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
-
-import api from '@/api';
 
 // 首先定义用户数据的接口
 interface UserData {
@@ -81,11 +78,13 @@ const Audits = () => {
 		}
 	}, [selectedUser, form]);
 
+	// 获取数据
 	const fetchData = async () => {
 		try {
 			setLoading(true);
-			const response: any = await api.GetUsers({});
-			const usersWithDefaultStatus = response.data.map((user: any) => ({
+			const response = await fetch('http://127.0.0.1:8001/audits/getAudits');
+			const result = await response.json();
+			const usersWithDefaultStatus = result.data.map((user: any) => ({
 				...user,
 				audit_status: user.audit_status || '待审核'
 			}));
@@ -96,6 +95,7 @@ const Audits = () => {
 			setLoading(false);
 		}
 	};
+
 	// 批量通过
 	const handleBatchApprove = async () => {
 		if (selectedRowKeys.length === 0) {
@@ -103,17 +103,28 @@ const Audits = () => {
 			return;
 		}
 		try {
-			// 将 selectedRowKeys 转换为 number[]
 			const numericKeys = selectedRowKeys.map(key => Number(key));
-			await api.BatchApprove(numericKeys);
-			message.success('批量通过成功');
-			fetchData(); // 刷新数据
-			setSelectedRowKeys([]); // 清空选择
+			const response = await fetch('http://127.0.0.1:8001/audits/batchApprove', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ userIds: numericKeys }),
+			});
+			const result = await response.json();
+			if (result.success) {
+				message.success('批量通过成功');
+				fetchData();
+				setSelectedRowKeys([]);
+			} else {
+				message.error('批量通过失败');
+			}
 		} catch (error) {
 			message.error('批量通过失败');
 		}
 	};
 
+	// 行选择配置
 	const rowSelection = {
 		selectedRowKeys,
 		onChange: (newSelectedRowKeys: React.Key[]) => {
@@ -121,6 +132,7 @@ const Audits = () => {
 		},
 	};
 
+	// 显示删除确认对话框
 	const showdDeleteConfirm = (record: any) => {
 		Modal.confirm({
 			title: '您确定要删除这条审核信息吗？',
@@ -130,16 +142,23 @@ const Audits = () => {
 			}
 		});
 	};
-	// 查询
 
+	// 查询
 	const handleSearch = async () => {
+		if (!organization && !association) {
+			message.warning('请输入查询内容');
+			return;
+		}
 		try {
 			setLoading(true);
-			const response = await api.GetAudits({
-				organization,
-				association,
-			}) as { data: UserData[] };
-			setData(response.data);
+			const response = await fetch(`http://127.0.0.1:8001/audits/getAudits?organization=${organization}&association=${association}`);
+			const result = await response.json();
+			if (!result.success) {
+				message.error(result.message);
+				return;
+			}
+			setData(result.data);
+			message.success(result.message);
 		} catch (error) {
 			message.error('查询失败');
 		} finally {
@@ -147,22 +166,32 @@ const Audits = () => {
 		}
 	};
 
+	// 重置查询条件
 	const handleReset = () => {
 		setOrganization('');
 		setAssociation('');
-		fetchData(); // 重置后重新获取所数据
+		fetchData(); // 重置后重新获取所有数据
 	};
+
 	// 删除
 	const handleDelete = async (record: { id: number }) => {
 		try {
-			await api.DeleteUser({ id: record.id });
-			message.success('删除成功');
-			fetchData();
+			const response = await fetch(`http://127.0.0.1:8001/audits/deleteAudit?id=${record.id}`, {
+				method: 'DELETE',
+			});
+			const result = await response.json();
+			if (result.success) {
+				message.success('删除成功');
+				fetchData();
+			} else {
+				message.error('删除信息失败');
+			}
 		} catch (error) {
 			message.error('删除信息失败');
 		}
 	};
-	// 对应更新
+
+	// 提交审核
 	const handleAuditSubmit = async (values: any) => {
 		try {
 			const adjustedValues = {
@@ -170,29 +199,32 @@ const Audits = () => {
 				audit_status: values.audit_status,
 				notification: values.notification
 			};
-			await api.AuditUser(adjustedValues);
-			if (values.audit_status === '通过') {
-				message.success('通过审核');
-			} else if (values.audit_status === '拒绝') {
-				message.success('拒绝审核');
-			}
-			setShowAuditModal(false);
-			setSelectedUser(null);
-			fetchData();
-		} catch (error) {
-			let errorMessage = '审核失败';
-			if (axios.isAxiosError(error)) {
-				if (error.response) {
-					errorMessage = error.response.data?.message || '请求失败，未能获取详细信息';
-				} else {
-					errorMessage = '请求失败，未收到响应';
+			const response = await fetch('http://127.0.0.1:8001/audits/auditUser', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(adjustedValues),
+			});
+			const result = await response.json();
+			if (result.success) {
+				if (values.audit_status === '通过') {
+					message.success('通过审核');
+				} else if (values.audit_status === '拒绝') {
+					message.success('拒绝审核');
 				}
-			} else if (error instanceof Error) {
-				errorMessage = error.message;
+				setShowAuditModal(false);
+				setSelectedUser(null);
+				fetchData();
+			} else {
+				message.error('审核失败');
 			}
-			message.error(errorMessage);
+		} catch (error) {
+			message.error('审核失败');
 		}
 	};
+
+	// 打开审核对话框
 	const openAuditModal = (record: any) => {
 		setSelectedUser({
 			id: record.id,
@@ -203,6 +235,7 @@ const Audits = () => {
 		setShowAuditModal(true);
 	};
 
+	// 表格列配置
 	const columns = [
 		{
 			title: '序号',
