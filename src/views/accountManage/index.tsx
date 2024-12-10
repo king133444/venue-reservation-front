@@ -23,6 +23,8 @@ const AccountManagement = () => {
   const [visibleDelete, setVisibleDelete] = useState(false);
   const [visibleAdd, setVisibleAdd] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [roles, setRoles] = useState<any>([]);
+  const [roleLoading, setRoleLoading] = useState<boolean>(true);
 
   // 获取用户列表信息
   const getAccouts = async () => {
@@ -39,6 +41,22 @@ const AccountManagement = () => {
       message.error('获取失败');
     } finally {
       setTableLoading(false);
+    }
+  };
+
+  const getRoles = async () => {
+    try {
+      const result: any = await api.GetAllRole({});
+      const { success, data, message: info } = result;
+      if (success) {
+        setRoles(data.roles);
+      } else {
+        message.error(info);
+      }
+    } catch (error) {
+      message.error('获取失败');
+    } finally {
+      setRoleLoading(false);
     }
   };
   // 修改框
@@ -84,13 +102,14 @@ const AccountManagement = () => {
   useEffect(() => {
     setTableLoading(true);
     getAccouts();
+    getRoles();
   }, []);
   const handleSubmit = async () => {
     const { account, password } = formAdd.getFieldsValue();
 
     try {
       setLoading(true);
-      const result: any = await api.Signup({
+      const result: any = await api.CreateAccount({
         role_id: Number(role),
         account: account,
         password,
@@ -151,18 +170,11 @@ const AccountManagement = () => {
     },
     {
       title: '角色',
-      dataIndex: 'role_id',
+      dataIndex: ['role', 'role'],
       align: 'center',
-      key: 'roleId',
+      key: 'role',
       render: (record) => {
-        switch (record) {
-          case 1:
-            return <span>管理员</span>;
-          case 2:
-            return <span>保安</span>;
-          default:
-            return null; // Handle other cases if needed
-        }
+        return role === undefined ? '-' : record;
       }
     },
     {
@@ -372,14 +384,17 @@ const AccountManagement = () => {
               style={{ marginBottom: '10px' }}
             >
               <Select
+                loading={roleLoading}
                 style={{ width: 240 }}
-                defaultValue={role}
+                placeholder='请选择角色'
                 onChange={handleChange}
-                options={[
-                  { value: '1', label: '管理员' },
-                  { value: '2', label: '保安' },
-                ]}
-              />
+              >
+                {roles.map((item: any, key: any) => (
+                  <Select.Option key={key} value={item?.id}>
+                    {item?.role}
+                  </Select.Option>
+                ))}
+              </Select>
             </Form.Item>
           </Form>
         </Modal>

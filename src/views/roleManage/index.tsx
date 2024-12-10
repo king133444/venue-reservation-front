@@ -102,7 +102,7 @@ const RoleManagement = () => {
     setEditId(record.id);
 
   };
-  // 获取用户列表信息
+  // 获取角色列表信息
   const getRoles = async () => {
     try {
       const result: any = await api.GetAllRole({});
@@ -138,6 +138,7 @@ const RoleManagement = () => {
   const handleReset = () => {
     setSelectedRole(undefined);
     setCurrentData(data);
+    setTotal(data.length);
   };
   // 创建角色
   const handleSubmit = async () => {
@@ -231,7 +232,7 @@ const RoleManagement = () => {
         height: '800px',
         backgroundColor: 'white',
       }}>
-        <Row style={{ display: 'flex', justifyContent: 'space-between', padding: '10px' }}>
+        <Row style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
           <Col>
             <Button
               type='primary'

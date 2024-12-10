@@ -19,11 +19,12 @@ const LoginForm = () => {
 		try {
 			const response: any = await api.Login({ username, password });
 			const { success, message: info, data } = response;
-			const { accountId, roleName, auth } = data;
+			const { accountId, roleName, auth, name } = data;
 			// 检查登录是否成功
 			if (success) {
 				sessionStorage.setItem('id', accountId);
 				sessionStorage.setItem('role', roleName);
+				sessionStorage.setItem('name', name);
 				sessionStorage.setItem('auth', auth);
 				message.success(info);
 				if (roleName === '管理员') {
