@@ -7,9 +7,11 @@ export default function LayoutHeader() {
   const navigate = useNavigate();
   const id = sessionStorage.getItem('id') ?? '暂无';
   const role = sessionStorage.getItem('role') ?? '暂无';
+  const name = sessionStorage.getItem('name') ?? '暂无';
   const logout = () => {
     sessionStorage.setItem('id', '');
     sessionStorage.setItem('role', '');
+    sessionStorage.setItem('name', '');
     sessionStorage.setItem('auth', '');
     navigate('/login');
   };
@@ -46,28 +48,34 @@ export default function LayoutHeader() {
               <Col span={16}>
                 {/* ID 和 角色名 */}
                 <div style={{ padding: '0 10px' }}>
-                  <p style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>ID: {id}</p>
+                  <p
+                    style={{ margin: '5px 0', fontSize: '16px', fontWeight: 'bold' }}>ID: {id}
+                  </p>
+                  <p
+                    style={{ margin: '5px 0', fontSize: '16px', fontWeight: 'bold' }}>账号: {name}
+                  </p>
                   <p style={{
-                    margin: '10px 0', fontSize: '16px', fontWeight: 'bold'
+                    margin: '5px 0', fontSize: '16px', fontWeight: 'bold'
                   }}>身份: {role}</p>
                 </div>
                 {/* 按钮 */}
                 <Row
                   justify="space-around"
-                  style={{ marginTop: '10px' }}
-                >
-                  <Button type="link">
-                    修改密码
-                  </Button>
-                  <Button
-                    type="link"
-                    size="small"
-                    onClick={() => {
-                      logout();
-                    }}
-                  >
-                    退出
-                  </Button>
+                ><Col>
+                    <Button type="link">
+                      修改密码
+                    </Button>
+                  </Col>
+                  <Col>
+                    <Button
+                      type="link"
+                      onClick={() => {
+                        logout();
+                      }}
+                    >
+                      退出
+                    </Button>
+                  </Col>
                 </Row>
               </Col>
             </Row>
