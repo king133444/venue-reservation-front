@@ -1,12 +1,14 @@
-import { Button, Result } from "antd";
-import { useNavigate } from "react-router-dom";
-import { HOME_URL } from "@/config/config";
-import "./index.less";
+import './index.less';
+
+import { Button, Result } from 'antd';
+import { useNavigate } from 'react-router-dom';
+
+import { HOME_URL1 } from '@/config/config';
 
 const NotAuth = () => {
 	const navigate = useNavigate();
 	const goHome = () => {
-		navigate(HOME_URL);
+		navigate(HOME_URL1);
 	};
 	return (
 		<Result

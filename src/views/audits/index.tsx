@@ -8,6 +8,8 @@ import {
 import { Content } from 'antd/es/layout/layout';
 import { useEffect, useState } from 'react';
 
+import { baseURL } from '@/components/ReqInstance/axios';
+
 // 首先定义用户数据的接口
 interface UserData {
 	id: number;
@@ -82,7 +84,9 @@ const Audits = () => {
 	const fetchData = async () => {
 		try {
 			setLoading(true);
-			const response = await fetch('http://127.0.0.1:8001/audits/getAudits');
+			console.log('ba', baseURL);
+
+			const response = await fetch(baseURL + '/audits/getAudits');
 			const result = await response.json();
 			const usersWithDefaultStatus = result.data.map((user: any) => ({
 				...user,
@@ -104,7 +108,7 @@ const Audits = () => {
 		}
 		try {
 			const numericKeys = selectedRowKeys.map(key => Number(key));
-			const response = await fetch('http://127.0.0.1:8001/audits/batchApprove', {
+			const response = await fetch(baseURL + '/audits/batchApprove', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -151,7 +155,7 @@ const Audits = () => {
 		}
 		try {
 			setLoading(true);
-			const response = await fetch(`http://127.0.0.1:8001/audits/getAudits?organization=${organization}&association=${association}`);
+			const response = await fetch(baseURL + `/audits/getAudits?organization=${organization}&association=${association}`);
 			const result = await response.json();
 			if (!result.success) {
 				message.error(result.message);
@@ -176,7 +180,7 @@ const Audits = () => {
 	// 删除
 	const handleDelete = async (record: { id: number }) => {
 		try {
-			const response = await fetch(`http://127.0.0.1:8001/audits/deleteAudit?id=${record.id}`, {
+			const response = await fetch(baseURL + `/audits/deleteAudit?id=${record.id}`, {
 				method: 'DELETE',
 			});
 			const result = await response.json();
@@ -199,7 +203,7 @@ const Audits = () => {
 				audit_status: values.audit_status,
 				notification: values.notification
 			};
-			const response = await fetch('http://127.0.0.1:8001/audits/auditUser', {
+			const response = await fetch(baseURL + 'audits/auditUser', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',

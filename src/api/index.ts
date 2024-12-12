@@ -136,5 +136,13 @@ export default {
 	DeleteRole: (params: any) => {
 		return fetchPost('/role/delete', params);
 	},
-
+	/**
+	 * 免责声明相关接口
+	 */
+	GetDisclaimers: (params: any) => {
+		return fetchGet('/disclaimers/latest', params);
+	},
+	CreateDisclaimers: (params: any) => {
+		return fetchPost('/disclaimers', params);
+	},
 };

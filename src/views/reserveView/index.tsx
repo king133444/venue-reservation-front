@@ -17,6 +17,7 @@ dayjs.locale('zh-cn');
 import { useCallback, useEffect, useState } from 'react';
 
 import api from '@/api';
+import { baseURL } from '@/components/ReqInstance/axios';
 
 import ShowUserDetail from './components/showUserDetail';
 interface TimeslotDTO {
@@ -213,7 +214,7 @@ const ReserveView = () => {
   // 前后端连接获取用户详情,拿到数据库当中的用户的信息
   const fetchUserDetails = async (selectedUserId: number) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8001/users/getUser/${selectedUserId}`);
+      const response = await axios.get(baseURL + `/users/getUser/${selectedUserId}`);
       if (response.status === 200) {
         return response.data.data;
       } else {

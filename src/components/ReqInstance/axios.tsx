@@ -1,8 +1,7 @@
 import type { AxiosResponse } from 'axios';
 import axios from 'axios';
 
-// const ip = 'http://8.130.10.227/'
-// const ip = 'http://8.130.10.227'
+// const ip = 'http://8.130.10.227';
 const ip = 'http://127.0.0.1';
 // export const baseURL = 'http://' + ip + ':8001'
 export const baseURL = ip + ':8001';

@@ -1,6 +1,7 @@
 import { Button, Form, Input, message } from 'antd';
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+
+import api from '@/api';
 
 interface DisclaimerFormValues {
     content: string;
@@ -14,8 +15,13 @@ const DisclaimerForm: React.FC = () => {
         // 获取最新的免责声明
         const fetchLatestDisclaimer = async () => {
             try {
-                const response = await axios.get('http://127.0.0.1:8001/disclaimers/latest');
-                setLatestDisclaimer(response.data.content); // 提取 content 字段
+                const response: any = await api.GetDisclaimers({});
+                if (response) {
+                    setLatestDisclaimer(response.content); // 提取 content 字段
+                } else {
+                    message.error('获取失败');
+                }
+
             } catch (error) {
                 message.error('获取免责声明失败');
             }
@@ -26,8 +32,13 @@ const DisclaimerForm: React.FC = () => {
     const onFinish = async (values: DisclaimerFormValues) => {
         setLoading(true);
         try {
-            const response = await axios.post('http://127.0.0.1:8001/disclaimers', values);
-            message.success(response.data);
+            const response: any = await api.CreateDisclaimers(values);
+            if (response.data) {
+                message.success(response.data);
+            } else {
+                message.error('提交失败');
+            }
+
             // 更新最新的免责声明
             setLatestDisclaimer(values.content);
         } catch (error) {
@@ -38,7 +49,7 @@ const DisclaimerForm: React.FC = () => {
     };
 
     return (
-        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', height: '1000px' }}>
             <h2>最新免责声明</h2>
             <p style={{ whiteSpace: 'pre-wrap' }}>{latestDisclaimer || '暂无免责声明'}</p>
 
