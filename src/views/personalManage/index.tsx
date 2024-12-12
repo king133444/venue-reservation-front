@@ -21,7 +21,10 @@ const UserManagement = () => {
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [imagePreview, setImagePreview] = useState('');
 	const [, setImageBase64] = useState('');
+	const [license_plate_picturePreview, setLicense_plate_picturePreview] = useState('');
+	const [, setLicense_plate_pictureBase64] = useState('');
 	const [selectedUser, setSelectedUser] = useState<{
+		license_plate_picture?: string;
 		id?: number;
 		name?: string;
 		id_number?: string;
@@ -196,23 +199,21 @@ const UserManagement = () => {
 
 		// 为每一行数据添加序号，并去掉 id 列
 		// eslint-disable-next-line max-len
-		const 序号数据 = sortedData.map((item: { name: any; organization: any; association: any; id_number: any; phone: any; image: any; is_car_coming: any; license_plate_number: any; license_plate_picture: any; status: any; audit_status: any; notification: any; create_time: any; update_time: any; openId: any; }, index: number) => ({
+		const 序号数据 = sortedData.map((item: { name: any; organization: any; association: any; id_number: any; phone: any; is_outsider: any; is_car_coming: any; license_plate_number: any; status: any; audit_status: any; notification: any; create_time: any; update_time: any; }, index: number) => ({
 			序号: index + 1, // 序号从1开始
 			姓名: item.name,
 			单位: item.organization,
 			协会: item.association,
 			身份证号: item.id_number,
 			手机号: item.phone,
-			人脸照片: item.image,
+			是否为外来者: item.is_outsider ? '是' : '否',
 			是否有车: item.is_car_coming ? '是' : '否',
 			车牌号: item.license_plate_number ? '是' : '否',
-			车牌照片: item.license_plate_picture,
-			状态: item.status ? '正常' : '请假', // 假设状态为布尔值，转换为中文
+			状态: item.status ? '请假' : '正常', // 假设状态为布尔值，转换为中文
 			审核状态: item.audit_status,
 			通知: item.notification,
 			创建时间: item.create_time,
 			更新时间: item.update_time,
-			openId: item.openId
 		}));
 
 		// 定义中文列标题
@@ -223,16 +224,14 @@ const UserManagement = () => {
 			'协会',
 			'身份证号',
 			'手机号',
-			'人脸照片',
+			'是否为外来者',
 			'是否有车',
 			'车牌号',
-			'车牌照片',
 			'状态',
 			'审核状态',
 			'通知',
 			'创建时间',
 			'更新时间',
-			'openId'
 		];
 
 		// 使用序号数据和中文列标题创建工作表
@@ -244,16 +243,14 @@ const UserManagement = () => {
 			{ wch: 10 }, // 协会
 			{ wch: 20 }, // 身份证号
 			{ wch: 15 }, // 手机号
-			{ wch: 10 }, // 人脸照片
+			{ wch: 15 }, // 是否为外来者
 			{ wch: 10 }, // 是否有车
 			{ wch: 10 }, // 车牌号
-			{ wch: 10 }, // 车牌照片
 			{ wch: 10 }, // 状态
 			{ wch: 10 }, // 审核状态
 			{ wch: 10 }, // 通知
-			{ wch: 20 }, // 创建时间
-			{ wch: 20 }, // 更新时间
-			{ wch: 10 } // openId
+			{ wch: 25 }, // 创建时间
+			{ wch: 25 }, // 更新时间
 		];
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, '用户名单');
@@ -284,7 +281,8 @@ const UserManagement = () => {
 		}
 	};
 
-	const handleBeforeUpload = (file: Blob) => {
+	// 人脸照片上传
+	const handleImageUpload = (file: Blob) => {
 		const reader = new FileReader();
 		reader.onload = () => {
 			if (typeof reader.result === 'string') {
@@ -292,6 +290,68 @@ const UserManagement = () => {
 				const base64Data = reader.result.split(',')[1];
 				setImageBase64(base64Data);
 				form.setFieldsValue({ image: base64Data });
+			}
+		};
+		reader.readAsDataURL(file);
+		return false;
+	};
+
+	// 车牌照片上传
+	const handleLicense_plate_pictureUpload = (file: Blob) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			if (typeof reader.result === 'string') {
+				setLicense_plate_picturePreview(reader.result);
+				const base64Data = reader.result.split(',')[1];
+				setLicense_plate_pictureBase64(base64Data);
+				// 确保在编辑状态下也更新对应的表单项
+				// if (editform) {
+				// editform.setFieldsValue({ license_plate_picture: base64Data });
+				// }	
+				form.setFieldsValue({ license_plate_picture: base64Data });
+			}
+		};
+		reader.readAsDataURL(file);
+		return false;
+	};
+
+	// 编辑模式下的图片上传处理
+	const handleEditImageUpload = (file: Blob) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			if (typeof reader.result === 'string') {
+				setImagePreview(reader.result);
+				const base64Data = reader.result.split(',')[1];
+				setImageBase64(base64Data);
+				editform.setFieldsValue({ image: base64Data });
+				// 更新 selectedUser 中的图片数据
+				if (selectedUser) {
+					setSelectedUser({
+						...selectedUser,
+						image: base64Data
+					});
+				}
+			}
+		};
+		reader.readAsDataURL(file);
+		return false;
+	};
+
+	const handleEditLicense_plate_pictureUpload = (file: Blob) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			if (typeof reader.result === 'string') {
+				setLicense_plate_picturePreview(reader.result);
+				const base64Data = reader.result.split(',')[1];
+				setLicense_plate_pictureBase64(base64Data);
+				editform.setFieldsValue({ license_plate_picture: base64Data });
+				// 更新 selectedUser 中的图片数据
+				if (selectedUser) {
+					setSelectedUser({
+						...selectedUser,
+						license_plate_picture: base64Data
+					});
+				}
 			}
 		};
 		reader.readAsDataURL(file);
@@ -402,6 +462,8 @@ const UserManagement = () => {
 	const openAddModal = () => {
 		form.resetFields();
 		setImagePreview('');
+		setLicense_plate_picturePreview('');
+		setLicense_plate_pictureBase64('');
 		setImageBase64('');
 		setShowAddModal(true);
 	};
@@ -425,6 +487,23 @@ const UserManagement = () => {
 			setImagePreview(`data:image/jpeg;base64,${record.image}`);
 		}
 
+		// 如果当前记录没有图片，清除图片预览
+		if (!record.license_plate_picture) {
+			setLicense_plate_picturePreview(''); // 清除图片预览
+		} else {
+			// 如果有图片，置图片预览为当前记录的图片
+			setLicense_plate_picturePreview(`data:image/jpeg;base64,${record.license_plate_picture}`);
+		}
+		// editform.setFieldsValue({
+		// 	...record,
+		// 	id_number: record.id_number,
+		// 	is_car_coming: record.is_car_coming === true,
+		// 	license_plate_number: record.license_plate_number === true,
+		// 	status: record.status === true,
+		// });
+
+		setImagePreview(record.image ? `data:image/jpeg;base64,${record.image}` : '');
+		setLicense_plate_picturePreview(record.license_plate_picture ? `data:image/jpeg;base64,${record.license_plate_picture}` : '');
 		setShowEditModal(true);
 	};
 
@@ -478,9 +557,9 @@ const UserManagement = () => {
 			dataIndex: 'license_plate_picture',
 			key: 'license_plate_picture',
 			render: (text: string | undefined) => {
-				const imageUrl = text ? `data:image/jpeg;base64,${text}` : '-';
-				return imageUrl ?
-					<img src={imageUrl}
+				const license_plate_pictureUrl = text ? `data:image/jpeg;base64,${text}` : '-';
+				return license_plate_pictureUrl ?
+					<img src={license_plate_pictureUrl}
 						style={{ width: 50, height: 50 }} /> : <span>暂无照片</span>;
 			}
 		},
@@ -488,7 +567,7 @@ const UserManagement = () => {
 			title: '状态',
 			dataIndex: 'status',
 			key: 'status',
-			render: (text: boolean) => (text ? '正常' : '请假'),
+			render: (text: boolean) => (text ? '请假' : '正常'),
 		},
 		{
 			title: '操作',
@@ -674,7 +753,7 @@ const UserManagement = () => {
 					<Form.Item label="人脸照片" name="image">
 						<Upload
 							showUploadList={false}
-							beforeUpload={handleBeforeUpload}
+							beforeUpload={handleImageUpload}
 							accept="image/*">
 							<Button icon={<UploadOutlined />}>上传图片</Button>
 						</Upload>
@@ -712,13 +791,13 @@ const UserManagement = () => {
 					<Form.Item label="车牌照片" name="license_plate_picture">
 						<Upload
 							showUploadList={false}
-							beforeUpload={handleBeforeUpload}
+							beforeUpload={handleLicense_plate_pictureUpload}
 							accept="image/*">
 							<Button icon={<UploadOutlined />}>上传图片</Button>
 						</Upload>
-						{imagePreview && (
+						{license_plate_picturePreview && (
 							<img
-								src={imagePreview}
+								src={license_plate_picturePreview}
 								alt="预览"
 								style={{
 									maxWidth: '100%', marginTop: 10, width: 100, height: 100
@@ -805,7 +884,7 @@ const UserManagement = () => {
 									<Upload
 										showUploadList={false}
 										beforeUpload={file => {
-											handleBeforeUpload(file);
+											handleEditImageUpload(file);
 											return false; // 阻止自动上传
 										}}
 										accept="image/*"
@@ -818,7 +897,7 @@ const UserManagement = () => {
 								<Upload
 									showUploadList={false}
 									beforeUpload={file => {
-										handleBeforeUpload(file);
+										handleEditImageUpload(file);
 										return false;
 									}}
 									accept="image/*"
@@ -853,19 +932,19 @@ const UserManagement = () => {
 							valuePropName="checked"
 							rules={[{ required: false, message: '是否有车牌号' }]}
 						>
-							<Switch />
+							<Input />
 						</Form.Item>
 						<Form.Item label="车牌照片" name="license_plate_picture">
-							{selectedUser?.image ? (
+							{selectedUser?.license_plate_picture ? (
 								<div>
 									<img
-										src={`data:image/jpeg;base64,${selectedUser.image}`}
+										src={`data:image/jpeg;base64,${selectedUser.license_plate_picture}`}
 										style={{ width: 100, height: 100, marginBottom: 10 }}
 									/>
 									<Upload
 										showUploadList={false}
 										beforeUpload={file => {
-											handleBeforeUpload(file);
+											handleEditLicense_plate_pictureUpload(file);
 											return false; // 阻止自动上传
 										}}
 										accept="image/*"
@@ -878,7 +957,7 @@ const UserManagement = () => {
 								<Upload
 									showUploadList={false}
 									beforeUpload={file => {
-										handleBeforeUpload(file);
+										handleEditLicense_plate_pictureUpload(file);
 										return false;
 									}}
 									accept="image/*"
@@ -887,9 +966,9 @@ const UserManagement = () => {
 								</Upload>
 							)}
 							{/* 如果有图片预览，则显示图片预览 */}
-							{imagePreview && !selectedUser?.image && (
+							{license_plate_picturePreview && !selectedUser?.image && (
 								<img
-									src={imagePreview}
+									src={license_plate_picturePreview}
 									alt="预览"
 									style={{
 										maxWidth: '100%',
