@@ -32,7 +32,7 @@ const UserManagement = () => {
 		is_outsider?: Boolean;
 		is_car_coming?: Boolean;
 		status?: Boolean;
-		license_plate_number?: String; // 确保这是一个字符串或者null
+		license_plate_number?: String; // 确保这是一字符串或者null
 		remark?: String; // 确保这是一个字符串或者null
 		audit_status?: String;
 		notification?: String;
@@ -46,34 +46,35 @@ const UserManagement = () => {
 	const isLastPage = currentPage === totalPages;
 	const dataOnLastPage = data.length % 10 || 10;
 	const actualDataCount = isLastPage ? dataOnLastPage : 10;
-	const [organizations] = useState([]); // 新增状态
-	const [associations] = useState(['篮协', '羽协']); // 新增状态
+	// 用来存储筛选框的选项
+	const associations = ['篮协', '羽协'];
+	const [filters] = useState({ association: '', organization: '' }); // 初始值为空
+	console.log('查询条件:', filters);
 
 	// 计算需要补充的高度
 	const fillHeight = isLastPage ? (10 - actualDataCount) * rowHeight : 0;
 
-	useEffect(() => {
-		fetchData();
-	}, [organizations, associations]);
+	// 获取所有单位（去重）
+	const getUniqueOrganization = () => {
+		const organizations =
+			originalData.map((item: { organization: string; }) => item.organization);
+		return [...new Set(organizations)]; // 去重
+	};
 
-	const [form] = Form.useForm();
-	useEffect(() => {
-		if (selectedUser) {
-			form.setFieldsValue({
-				...selectedUser,
-				id_number: selectedUser.id_number,
-			});
-		}
-	}, [selectedUser, form]);
-
-	const fetchData = async () => {
+	// 查询数据
+	const fetchData = async (filters: { organization?: string, association?: string }) => {
 		try {
 			setLoading(true);
-			const response: any = await api.GetUsers({});
+			const response: any = await api.GetUsers({ filters });
 
-			setOriginalData(response.data); // 保存原始数据
+			if (response.data) {
+				setOriginalData(response.data);
+				setData(response.data);
 
-			setData(response.data);
+				if (response.data.length === 0) {
+					message.info('没有找到符合条件的数据');
+				}
+			}
 		} catch (error) {
 			message.error('获取数据错误');
 		} finally {
@@ -81,29 +82,93 @@ const UserManagement = () => {
 		}
 	};
 
-	const fetchFilteredUsers = async (organization: any, association: any) => {
+	// 查询按钮点击事件
+	const handleSearch = async () => {
 		try {
-			// 构建查询参数
-			const params = { organization, association };
-
-			// 发送 GET 请求，并将参数附加到 URL 上
-			const response = await axios.get('http://127.0.0.1:8001/users/getUsers', { params });
-
-			return response.data;
+			// 这里会触发表单验证 const values = await form.validateFields();
+			// 获取表单值但不进行验证
+			const values = searchform.getFieldsValue();
+			// 直接使用获取到的值进行筛选
+			await fetchData(values);
 		} catch (error) {
-			message.error('获取筛选后的用户列表失败');
+			console.error('搜索错误:', error);
 		}
 	};
 
-	const handleSearch = async (values: any) => {
-		const { organization, association } = values;
-		const filteredData = await fetchFilteredUsers(organization, association);
-		setData(filteredData.data);
+	// 重置按钮点击事件
+	const handleReset = async () => {
+		searchform.resetFields();
+		fetchData({}); // 重置查询,获取所有数据
 	};
+
+	// 使用 useEffect 来加载初始数据
+	useEffect(() => {
+		fetchData({});  // 初始加载所有数据
+	}, []);  // 空数组表示只在组件首次渲染时调用一次
+
+	const [editform] = Form.useForm();
+	const [searchform] = Form.useForm();
+	const [form] = Form.useForm();
+	useEffect(() => {
+		if (selectedUser) {
+			editform.setFieldsValue({
+				...selectedUser,
+				id_number: selectedUser.id_number,
+			});
+		}
+	}, [selectedUser, editform]);
+
+	// const handleUpload = async (file: string | Blob) => {
+	//  const formData = new FormData();
+	//  formData.append('file', file);
+	//  try {
+	//      const response: any = await api.UploadUsers(formData);
+
+	//      if (!response.success) {
+	//          message.error(response.message);
+	//          return;
+	//      }
+	//      message.success(response.message);
+	//      fetchData({});
+	//  } catch (error) {
+	//      let errorMessage = '导入失败';
+	//      if (axios.isAxiosError(error) && error.response) {
+	//          errorMessage = error.response.data.message || errorMessage;
+	//      } else if (error instanceof Error) {
+	//          errorMessage = error.message;
+	//      }
+	//      message.error(errorMessage);
+	//  }
+	// };
+
+	// const handleUpload = async (file: string | Blob) => {
+	// 	const formData = new FormData();
+	// 	formData.append('file', file);
+	// 	console.log(formData);
+	// 	try {
+	// 		const response: any = await api.UploadUsers(formData);
+
+	// 		if (!response.success) {
+	// 			message.error(response.message);
+	// 			return;
+	// 		}
+	// 		message.success(response.message);
+	// 		fetchData({});
+	// 	} catch (error) {
+	// 		let errorMessage = '导入失败';
+	// 		if (axios.isAxiosError(error) && error.response) {
+	// 			errorMessage = error.response.data.message || errorMessage;
+	// 		} else if (error instanceof Error) {
+	// 			errorMessage = error.message;
+	// 		}
+	// 		message.error(errorMessage);
+	// 	}
+	// };
 
 	const handleUpload = async (file: string | Blob) => {
 		const formData = new FormData();
 		formData.append('file', file);
+		console.log(formData);
 		try {
 			const response: any = await api.UploadUsers(formData);
 
@@ -112,7 +177,7 @@ const UserManagement = () => {
 				return;
 			}
 			message.success(response.message);
-			fetchData();
+			fetchData({});
 		} catch (error) {
 			let errorMessage = '导入失败';
 			if (axios.isAxiosError(error) && error.response) {
@@ -127,10 +192,11 @@ const UserManagement = () => {
 	// 导出用户名单
 	const exportToExcel = () => {
 		// 首先，我们需要确保数据是按照分页排序的，并且有一个连续的序号
-		const sortedData: any = data.slice(); // 复制数据以避免修改原始数据
+		const sortedData = data.slice(); // 复制数据以避免修改原始数据
 
 		// 为每一行数据添加序号，并去掉 id 列
-		const 序号数据 = sortedData.map((item: any, index: number) => ({
+		// eslint-disable-next-line max-len
+		const 序号数据 = sortedData.map((item: { name: any; organization: any; association: any; id_number: any; phone: any; image: any; is_car_coming: any; license_plate_number: any; license_plate_picture: any; status: any; audit_status: any; notification: any; create_time: any; update_time: any; openId: any; }, index: number) => ({
 			序号: index + 1, // 序号从1开始
 			姓名: item.name,
 			单位: item.organization,
@@ -171,6 +237,24 @@ const UserManagement = () => {
 
 		// 使用序号数据和中文列标题创建工作表
 		const worksheet = XLSX.utils.json_to_sheet(序号数据, { header: headers });
+		worksheet['!cols'] = [
+			{ wch: 5 }, // 序号
+			{ wch: 10 }, // 姓名
+			{ wch: 10 }, // 单位
+			{ wch: 10 }, // 协会
+			{ wch: 20 }, // 身份证号
+			{ wch: 15 }, // 手机号
+			{ wch: 10 }, // 人脸照片
+			{ wch: 10 }, // 是否有车
+			{ wch: 10 }, // 车牌号
+			{ wch: 10 }, // 车牌照片
+			{ wch: 10 }, // 状态
+			{ wch: 10 }, // 审核状态
+			{ wch: 10 }, // 通知
+			{ wch: 20 }, // 创建时间
+			{ wch: 20 }, // 更新时间
+			{ wch: 10 } // openId
+		];
 		const workbook = XLSX.utils.book_new();
 		XLSX.utils.book_append_sheet(workbook, worksheet, '用户名单');
 		XLSX.writeFile(workbook, '用户名单.xlsx');
@@ -194,7 +278,7 @@ const UserManagement = () => {
 				return;
 			}
 			message.success(response.message);
-			fetchData();
+			fetchData({});
 		} catch (error) {
 			message.error('删除用户失败');
 		}
@@ -249,7 +333,7 @@ const UserManagement = () => {
 				message.success(response.data.message);
 				setShowAddModal(false);
 				form.resetFields();
-				fetchData();
+				fetchData({});
 			}
 		} catch (error) {
 			let errorMessage = '新增用户失败';
@@ -276,19 +360,31 @@ const UserManagement = () => {
 				is_outsider: values.is_outsider ? true : false,
 				is_car_coming: values.is_car_coming ? true : false,
 				status: values.status ? true : false,
-				id_number: values.id_number, // 确保这里使用的是 id_number
-				license_plate_number: values.license_plate_number || null, // 确保这是一个字符串或者null
-				remark: values.remark || null, // 确保这是一个字符串或者null
+				id_number: values.id_number,
+				license_plate_number: values.license_plate_number || null,
+				remark: values.remark || null,
 				audit_status: values.audit_status,
 				notification: values.notification || null,
 				openId: values.openId || null
 			};
+
 			const response: any = await api.UpdateUser(adjustedValues);
-			message.success(response.message);
-			setShowEditModal(false);
-			setSelectedUser(null);
-			fetchData();
+			if (response.message) {
+				message.success(response.message);
+				setShowEditModal(false);
+				setSelectedUser(null);
+
+				// 修复：编辑后清空筛选条件，避免筛选状态影响数据显示
+				form.setFieldsValue({
+					organization: undefined,
+					association: undefined
+				});
+
+				// 修复：重新获取所有数据，确保编辑后的数据能正确显示
+				await fetchData({});
+			}
 		} catch (error) {
+			// 优化错误处理逻辑，提供更详细的错误信息
 			let errorMessage = '更新用户失败';
 			if (axios.isAxiosError(error)) {
 				if (error.response) {
@@ -325,7 +421,7 @@ const UserManagement = () => {
 		if (!record.image) {
 			setImagePreview(''); // 清除图片预览
 		} else {
-			// 如果有图片，设置图片预览为当前记录的图片
+			// 如果有图片，置图片预览为当前记录的图片
 			setImagePreview(`data:image/jpeg;base64,${record.image}`);
 		}
 
@@ -339,17 +435,26 @@ const UserManagement = () => {
 			render: (_: undefined, __: any, index: number) =>
 				1 + index,
 		},
-		{ title: '姓名', dataIndex: 'name', key: 'name' },
-		{ title: '单位', dataIndex: 'organization', key: 'organization' },
-		{ title: '协会', dataIndex: 'association', key: 'association' },
-		{ title: '身份证号', dataIndex: 'id_number', key: 'id_number' },
-		{ title: '手机号', dataIndex: 'phone', key: 'phone' },
+		{ title: '姓名', dataIndex: 'name', key: 'name', render: (text: string) => text || '-' },
+		{
+			title: '单位', dataIndex: 'organization', key: 'organization',
+			render: (text: string) => text || '-'
+		},
+		{
+			title: '协会', dataIndex: 'association', key: 'association',
+			render: (text: string) => text || '-'
+		},
+		{
+			title: '身份证号', dataIndex: 'id_number', key: 'id_number',
+			render: (text: string) => text || '-'
+		},
+		{ title: '手机号', dataIndex: 'phone', key: 'phone', render: (text: string) => text || '-' },
 		{
 			title: '人脸照片',
 			dataIndex: 'image',
 			key: 'image',
 			render: (text: string | undefined) => {
-				const imageUrl = text ? `data:image/jpeg;base64,${text}` : '';
+				const imageUrl = text ? `data:image/jpeg;base64,${text}` : '-';
 				return imageUrl ?
 					<img src={imageUrl}
 						style={{ width: 50, height: 50 }} /> : <span>暂无照片</span>;
@@ -366,14 +471,14 @@ const UserManagement = () => {
 			title: '车牌号',
 			dataIndex: 'license_plate_number',
 			key: 'license_plate_number',
-			render: (text: string) => (text ? '是' : '否'),
+			render: (text: string) => text || '-',
 		},
 		{
 			title: '车牌照片',
 			dataIndex: 'license_plate_picture',
 			key: 'license_plate_picture',
 			render: (text: string | undefined) => {
-				const imageUrl = text ? `data:image/jpeg;base64,${text}` : '';
+				const imageUrl = text ? `data:image/jpeg;base64,${text}` : '-';
 				return imageUrl ?
 					<img src={imageUrl}
 						style={{ width: 50, height: 50 }} /> : <span>暂无照片</span>;
@@ -412,11 +517,6 @@ const UserManagement = () => {
 		},
 		showUploadList: false
 	};
-
-	const handleReset = () => {
-		fetchData();
-	};
-
 	return (
 		<>
 			<Layout
@@ -436,22 +536,38 @@ const UserManagement = () => {
 						alignItems: 'center',
 						justifyContent: 'center', // 水平居中对齐
 					}}>
-						<Form form={form} layout="inline" onFinish={handleSearch}>
-							<Form.Item label="单位" name="organization">
-								<Select placeholder="请选择单位" allowClear>
-									{originalData.map((org: any) => (
-										<Option key={org} value={org.organization}>
-											{org.organization}</Option>
+						<Form form={searchform} layout="inline" onFinish={handleSearch}>
+							{/* 单位筛选框 */}
+							<Form.Item name="organization" label="单位">
+								<Select
+									placeholder="请选择单位"
+									allowClear
+									style={{ width: 200 }}
+								>
+									{getUniqueOrganization().map((org, index) => (
+										<Option key={index} value={org}>
+											{org}
+										</Option>
 									))}
 								</Select>
 							</Form.Item>
-							<Form.Item label="协会" name="association">
-								<Select placeholder="请选择协会" allowClear>
-									{associations.map(ass => (
-										<Option key={ass} value={ass}>{ass}</Option>
+
+							{/* 协会筛选框 */}
+							<Form.Item name="association" label="协会">
+								<Select
+									placeholder="请选择协会"
+									allowClear
+									style={{ width: 200 }}
+								>
+									{associations.map((assoc, index) => (
+										<Option key={index} value={assoc}>
+											{assoc}
+										</Option>
 									))}
 								</Select>
 							</Form.Item>
+						</Form>
+						<Form form={form} layout="inline" >
 							<Form.Item>
 								<Button type="primary" htmlType="submit" onClick={handleSearch}>
 									查询
@@ -590,7 +706,7 @@ const UserManagement = () => {
 					<Form.Item
 						label="车牌号"
 						name="license_plate_number"
-						rules={[{ required: true, message: '请填写是或者否' }]}>
+						rules={[{ required: false, message: '请填写是或者否' }]}>
 						<Input />
 					</Form.Item>
 					<Form.Item label="车牌照片" name="license_plate_picture">
@@ -609,20 +725,6 @@ const UserManagement = () => {
 								}} />
 						)}
 					</Form.Item>
-					{/* <Form.Item
-                        label="职位"
-                        name="occupation"
-                        rules={[{ required: true, message: '请输入职位' }]}>
-                        <Input />
-                    </Form.Item> */}
-					{/* <Form.Item
-                        label="是否为电力员工"
-                        name="is_electrical_employee"
-                        valuePropName="checked"
-                        rules={[{ required: true, message: '请选择是否为电力员工' }]}
-                    >
-                        <Switch />
-                    </Form.Item> */}
 					<Form.Item
 						label="是否请假"
 						name="status"
@@ -631,11 +733,24 @@ const UserManagement = () => {
 					>
 						<Switch />
 					</Form.Item>
+					{/* <Form.Item
+                        label="审核状态" name="audit_status"
+                        rules={[{ required: true, message: '请输入审核状态' }]}>
+                        <Input />
+                    </Form.Item> */}
+
 					<Form.Item
-						label="审核状态" name="audit_status"
-						rules={[{ required: true, message: '请输入审核状态' }]}>
-						<Input />
+						label="审核状态"
+						name="audit_status"
+						rules={[{ required: true, message: '请输入审核状态' }]}
+					>
+						<Select placeholder="请选择审核状态" allowClear>
+							<Option value="待审核">待审核</Option>
+							<Option value="拒绝">拒绝</Option>
+							<Option value="通过">通过</Option>
+						</Select>
 					</Form.Item>
+
 					<Button type="primary" htmlType="submit">
 						新增用户
 					</Button>
@@ -646,7 +761,7 @@ const UserManagement = () => {
 				title="编辑用户" open={showEditModal}
 				footer={null} onCancel={() => setShowEditModal(false)}>
 				{selectedUser && (
-					<Form form={form} onFinish={handleEditSubmit}>
+					<Form form={editform} onFinish={handleEditSubmit}>
 						<Form.Item
 							label="姓名"
 							name="name"
@@ -784,20 +899,6 @@ const UserManagement = () => {
 									}} />
 							)}
 						</Form.Item>
-						{/* <Form.Item
-                            label="职位"
-                            name="occupation"
-                            rules={[{ required: true, message: '请输入职位' }]}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item
-                            label="是否为电力员工"
-                            name="is_electrical_employee"
-                            valuePropName="checked"
-                            rules={[{ required: true, message: '请选择是否为电力员工' }]}
-                        >
-                            <Switch />
-                        </Form.Item> */}
 						<Form.Item
 							label="是否请假"
 							name="status"
@@ -805,6 +906,17 @@ const UserManagement = () => {
 							rules={[{ required: false, message: '请选择状态' }]}
 						>
 							<Switch />
+						</Form.Item>
+						<Form.Item
+							label="审核状态"
+							name="audit_status"
+							rules={[{ required: true, message: '请输入审核状态' }]}
+						>
+							<Select placeholder="请选择审核状态" allowClear>
+								<Option value="待审核">待审核</Option>
+								<Option value="拒绝">拒绝</Option>
+								<Option value="通过">通过</Option>
+							</Select>
 						</Form.Item>
 						<Button type="primary" htmlType="submit">
 							提交
