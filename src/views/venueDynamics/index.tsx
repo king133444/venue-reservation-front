@@ -5,7 +5,7 @@ import {
    Button, Card, ConfigProvider, DatePicker, Form, Input,
    Layout, List, message, Modal, Pagination, Switch, Upload
 } from 'antd';
-import locale from 'antd/locale/zh_CN';
+import locale from 'antd/es/locale/zh_CN';
 import dayjs from 'dayjs';
 dayjs.locale('zh-cn');
 import React, { useCallback, useEffect, useState } from 'react';
