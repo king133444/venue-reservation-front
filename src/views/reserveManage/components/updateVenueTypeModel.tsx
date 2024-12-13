@@ -1,4 +1,14 @@
-import { Button, Checkbox, Form, Input, message, Modal, Radio, TimePicker } from 'antd';
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Radio,
+  TimePicker
+} from 'antd';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 
@@ -185,7 +195,6 @@ const UpdateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
   };
   useEffect(() => {
     if (editData) {
-      console.log('e', editData);
 
       setIsMorningAvailable(editData.timeslots?.morning?.available ?? false);
       setIsNoonAvailable(editData.timeslots?.lunchtime?.available ?? false);
@@ -203,7 +212,7 @@ const UpdateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
           editData.timeslots.morning.end ?
             dayjs(editData.timeslots.morning.end, 'HH:mm') : undefined,
         ] : undefined,
-        morningNumber: editData.timeslots?.morning?.number ?? undefined,
+        morningNumber: editData.timeslots?.morning?.number,
 
         is_lunchtime_available: editData.timeslots?.lunchtime?.available ?? undefined,
         lunch_time: editData.timeslots?.lunchtime ? [
@@ -252,7 +261,13 @@ const UpdateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
           </Button>,
         ]}
       >
-        <Form form={form} onFinish={handleSubmit} layout="horizontal" autoComplete="off">
+        <Form
+          form={form}
+          onFinish={handleSubmit}
+          layout="horizontal"
+          autoComplete="off"
+
+        >
           {/* 场馆类型名称 */}
           <Form.Item
             name="venueTypeName"
@@ -261,7 +276,7 @@ const UpdateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             labelCol={{ span: 6 }}
             wrapperCol={{ span: 18 }}
           >
-            <Input />
+            <Input style={{ width: '50%' }} />
           </Form.Item>
 
           {/* 是否适用之后全部日期 */}
@@ -312,8 +327,13 @@ const UpdateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             rules={isMorningAvailable ? [{ required: true, message: '请选择可预约人数' }] : []}
             labelCol={{ span: 6 }}
             wrapperCol={{ span: 18 }}
+
           >
-            <Input disabled={!isMorningAvailable} type="number" />
+            <InputNumber
+              style={{ width: '50%' }}
+              addonAfter="人"
+              disabled={!isMorningAvailable}
+              min={0} />
           </Form.Item>
 
           {/* 中午时间段设置 */}
@@ -350,7 +370,12 @@ const UpdateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             labelCol={{ span: 6 }}
             wrapperCol={{ span: 18 }}
           >
-            <Input type="number" disabled={!isNoonAvailable} />
+            <InputNumber
+              style={{ width: '50%' }}
+              min={0}
+              addonAfter="人"
+              disabled={!isNoonAvailable}
+            />
           </Form.Item>
 
           {/* 下午时间段设置 */}
@@ -388,7 +413,13 @@ const UpdateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             labelCol={{ span: 6 }}
             wrapperCol={{ span: 18 }}
           >
-            <Input type="number" disabled={!isANoonAvailable} />
+            <InputNumber
+              style={{ width: '50%' }}
+              min={0}
+              addonAfter="人"
+              disabled={!isANoonAvailable}
+            />
+
           </Form.Item>
 
           {/* 晚上时间段设置 */}
@@ -426,7 +457,11 @@ const UpdateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             labelCol={{ span: 6 }}
             wrapperCol={{ span: 18 }}
           >
-            <Input type="number" disabled={!isEveningAvailable} />
+            <InputNumber
+              style={{ width: '50%' }}
+              min={0}
+              addonAfter="人"
+              disabled={!isEveningAvailable} />
           </Form.Item>
 
           {/* 可预约日期 */}
