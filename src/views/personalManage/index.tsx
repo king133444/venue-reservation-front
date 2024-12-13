@@ -23,6 +23,7 @@ const UserManagement = () => {
 	const [, setImageBase64] = useState('');
 	const [license_plate_picturePreview, setLicense_plate_picturePreview] = useState('');
 	const [, setLicense_plate_pictureBase64] = useState('');
+	const [modal, contextHolder] = Modal.useModal();
 	const [selectedUser, setSelectedUser] = useState<{
 		license_plate_picture?: string;
 		id?: number;
@@ -258,9 +259,11 @@ const UserManagement = () => {
 	};
 
 	const showdDeleteConfirm = (record: any) => {
-		Modal.confirm({
+		modal.confirm({
 			title: '您确定要删除这个用户吗？',
 			content: '删除后，您将无法恢复这个用户。',
+			okText: '确认',
+			cancelText: '取消',
 			onOk() {
 				handleDelete(record);
 			}
@@ -607,6 +610,7 @@ const UserManagement = () => {
 					position: 'relative',
 				}}
 			>
+				{contextHolder}
 				<Content style={{ position: 'relative' }}>
 
 					<div style={{

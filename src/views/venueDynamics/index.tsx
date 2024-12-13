@@ -1,5 +1,4 @@
 import 'dayjs/locale/zh-cn';
-import 'dayjs/locale/zh-cn';
 
 import { UploadOutlined } from '@ant-design/icons';
 import {
@@ -36,6 +35,7 @@ const VenueDynamics = () => {
    const pageSize = 8;
    const total = dynamics.length;
    const [filterDate, setFilterDate] = useState<string | null>(null);
+   const [modal, contextHolder] = Modal.useModal();
    // 获取当前页的数据
    const currentData = dynamics.slice(
       (currentPage - 1) * pageSize,
@@ -129,9 +129,11 @@ const VenueDynamics = () => {
       }
    };
    const showdDeleteConfirm = (record: any) => {
-      Modal.confirm({
+      modal.confirm({
          title: '删除',
          content: '删除后，您将无法恢复这个场馆动态。',
+         okText: '确认',
+         cancelText: '取消',
          onOk() {
             handleDelete(record);
          }
@@ -182,6 +184,7 @@ const VenueDynamics = () => {
    return (
       <>
          <ConfigProvider locale={locale}>
+            {contextHolder}
             <Layout style={{
                marginTop: 20,
                borderRadius: '10px',
@@ -274,6 +277,8 @@ const VenueDynamics = () => {
                title={`${isEditMode ? '编辑' : '新增'}场馆动态`}
                open={isModalVisible}
                onOk={() => (isEditMode ? handleUpdate() : handleCreate())}
+               okText="确认"
+               cancelText="取消"
                onCancel={() => setIsModalVisible(false)}
             >
                <Form form={form} layout="vertical">
