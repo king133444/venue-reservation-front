@@ -34,7 +34,7 @@ const Audits = () => {
 	const [organization, setOrganization] = useState('');
 	const [association, setAssociation] = useState('');
 	const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-
+	const [modal, contextHolder] = Modal.useModal();
 	const [selectedUser, setSelectedUser] = useState<{
 		id?: number;
 		name?: string;
@@ -138,9 +138,11 @@ const Audits = () => {
 
 	// 显示删除确认对话框
 	const showdDeleteConfirm = (record: any) => {
-		Modal.confirm({
+		modal.confirm({
 			title: '您确定要删除这条审核信息吗？',
 			content: '删除后，您将无法恢复这个审核。',
+			okText: '确认',
+			cancelText: '取消',
 			onOk() {
 				handleDelete(record);
 			}
@@ -329,6 +331,7 @@ const Audits = () => {
 					position: 'relative',
 				}}
 			>
+				{contextHolder}
 				<Content style={{ position: 'relative' }}>
 					<div style={{ marginBottom: 16, display: 'flex', alignItems: 'center' }}>
 						<label htmlFor="organizationInput" style={{ marginRight: 8 }}>单位：</label>

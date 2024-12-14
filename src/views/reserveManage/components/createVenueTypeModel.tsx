@@ -1,4 +1,14 @@
-import { Button, Checkbox, Form, Input, message, Modal, Radio, TimePicker } from 'antd';
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Radio,
+  TimePicker
+} from 'antd';
 import React, { useState } from 'react';
 
 import api from '@/api';
@@ -260,10 +270,14 @@ const CreateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             name="morningNumber"
             label="上午可预约人数"
             rules={isMorningAvailable ? [{ required: true, message: '请选择可预约人数' }] : []}
-            labelCol={{ span: 6 }}
-            wrapperCol={{ span: 18 }}
+          // labelCol={{ span: 6 }}
+          // wrapperCol={{ span: 18 }}
           >
-            <Input disabled={!isMorningAvailable} type="number" />
+
+            <InputNumber style={{ width: '50%' }}
+              addonAfter="人"
+              disabled={!isMorningAvailable} type="number" />
+
           </Form.Item>
 
           {/* 中午时间段设置 */}
@@ -300,7 +314,9 @@ const CreateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             labelCol={{ span: 6 }}
             wrapperCol={{ span: 18 }}
           >
-            <Input type="number" disabled={!isNoonAvailable} />
+            <InputNumber style={{ width: '50%' }} min={0}
+              addonAfter="人"
+              disabled={!isNoonAvailable} />
           </Form.Item>
 
           {/* 下午时间段设置 */}
@@ -338,7 +354,10 @@ const CreateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             labelCol={{ span: 6 }}
             wrapperCol={{ span: 18 }}
           >
-            <Input type="number" disabled={!isANoonAvailable} />
+            <InputNumber style={{ width: '50%' }} min={0}
+              addonAfter="人"
+              disabled={!isANoonAvailable} />
+
           </Form.Item>
 
           {/* 晚上时间段设置 */}
@@ -377,7 +396,9 @@ const CreateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             labelCol={{ span: 6 }}
             wrapperCol={{ span: 18 }}
           >
-            <Input type="number" disabled={!isEveningAvailable} />
+            <InputNumber style={{ width: '50%' }} min={0} addonAfter="人"
+              disabled={!isEveningAvailable} />
+
           </Form.Item>
 
           {/* 可预约日期 */}
