@@ -203,7 +203,7 @@ const Audits = () => {
 				audit_status: values.audit_status,
 				notification: values.notification
 			};
-			const response = await fetch(baseURL + 'audits/auditUser', {
+			const response = await fetch(baseURL + '/audits/auditUser', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -221,7 +221,7 @@ const Audits = () => {
 				setSelectedUser(null);
 				fetchData();
 			} else {
-				message.error('审核失败');
+				message.error(result.message || '审核失败');
 			}
 		} catch (error) {
 			message.error('审核失败');
@@ -331,15 +331,18 @@ const Audits = () => {
 			>
 				<Content style={{ position: 'relative' }}>
 					<div style={{ marginBottom: 16, display: 'flex', alignItems: 'center' }}>
-						<label style={{ marginRight: 8 }}>单位：</label>
+						<label htmlFor="organizationInput" style={{ marginRight: 8 }}>单位：</label>
 						<Input
+							id="organizationInput"
 							placeholder="请输入单位"
 							value={organization}
 							onChange={e => setOrganization(e.target.value)}
+
 							style={{ width: 200, marginRight: 16 }}
 						/>
-						<label style={{ marginRight: 8 }}>协会：</label>
+						<label htmlFor="associationInput" style={{ marginRight: 8 }}>协会：</label>
 						<Input
+							id="associationInput"
 							placeholder="请输入协会"
 							value={association}
 							onChange={e => setAssociation(e.target.value)}
