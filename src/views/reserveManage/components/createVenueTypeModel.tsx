@@ -7,8 +7,10 @@ import {
   message,
   Modal,
   Radio,
-  TimePicker
+  TimePicker,
+  Tooltip,
 } from 'antd';
+import dayjs from 'dayjs';
 import React, { useState } from 'react';
 
 import api from '@/api';
@@ -132,6 +134,7 @@ const CreateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
     };
 
   };
+  const validUntilDate = dayjs().startOf('day').add(8, 'day').format('YYYY年MM月DD日 HH:mm:ss');
   const weekDaysOptions = [
     { label: '周一', value: 1 },
     { label: '周二', value: 2 },
@@ -217,8 +220,7 @@ const CreateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             name="venueTypeName"
             label="场馆类型名称"
             rules={[{ required: true, message: '请输入场馆类型名称' }]}
-            labelCol={{ span: 6 }}
-            wrapperCol={{ span: 18 }}
+
           >
             <Input />
           </Form.Item>
@@ -233,10 +235,12 @@ const CreateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
           >
             <Radio.Group>
               <Radio value={true}>是</Radio>
-              <Radio value={false}>否</Radio>
+              <Tooltip placement="rightTop" title={'若选择否，则场馆配置有效期至' + `${validUntilDate}`} arrow={true} color='#f50'>
+                <Radio value={false}>否</Radio>
+              </Tooltip>
+
             </Radio.Group>
           </Form.Item>
-
           {/* 上午时间段设置 */}
           <Form.Item
             name="is_morning_available"
@@ -406,8 +410,7 @@ const CreateVenueTypeModal: React.FC<CreateVenueTypeModalProps> = (
             name="dates"
             label="可预约日期"
             rules={[{ required: true, message: '请选择可预约日期' }]}
-            labelCol={{ span: 6 }}
-            wrapperCol={{ span: 18 }}
+
           >
             <Checkbox.Group options={weekDaysOptions} />
           </Form.Item>
